@@ -13,7 +13,7 @@ export default function RegisterScreen() {
     if (username && email && password) {
       Alert.alert('Registro exitoso', `Bienvenido, ${username}!`);
       // Redirigir a la pantalla de login u otra pantalla después del registro exitoso
-      navigation.navigate('register2' as never);
+      navigation.navigate('login' as never);
     } else {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
     }

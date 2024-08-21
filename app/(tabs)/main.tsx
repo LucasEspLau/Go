@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from 'expo-router';
 
-export default function RegisterScreen2() {
+export default function MainScreen() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +13,7 @@ export default function RegisterScreen2() {
     if (username && email && password) {
       Alert.alert('Registro exitoso', `Bienvenido, ${username}!`);
       // Redirigir a la pantalla de login u otra pantalla después del registro exitoso
-      navigation.navigate('login' as never);
+      navigation.navigate('register' as never);
     } else {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
     }

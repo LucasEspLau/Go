@@ -7,7 +7,7 @@ export default function IndexScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.navigate("register" as never);
+      navigation.navigate("main" as never);
     }, 2000);
 
     return () => clearTimeout(timer);
