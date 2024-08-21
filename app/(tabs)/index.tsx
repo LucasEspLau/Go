@@ -4,7 +4,7 @@ import { useNavigation } from 'expo-router';
 
 export default function IndexScreen() {
   const navigation = useNavigation();
-
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.navigate("main" as never);
@@ -15,7 +15,7 @@ export default function IndexScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Welcome to MyApp</Text>
+      <Text style={styles.text}>Go</Text>
     </View>
   );
 }
@@ -25,11 +25,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FA8148',
   },
   text: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
+    fontFamily: 'MoonGet'
   },
 });
