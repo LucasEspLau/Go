@@ -44,7 +44,7 @@ export function IconCat({img,name}:{img:ImageProps,name:string}){
     
     <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
       <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
-      <Link href={`/(contenido)/${name}`as any} >
+      <Link href={`/contenido/${name}`as any} >
         <Text>{name}</Text>
       </Link>
       

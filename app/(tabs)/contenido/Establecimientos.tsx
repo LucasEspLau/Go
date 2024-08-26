@@ -17,9 +17,11 @@ export default function ScreenEstablecimientos() {
     // Agrega más establecimientos según sea necesario
   ];
   const handlePress = (name: string,id:string) => {
-    const ruta = `/(establecimiento)/${id}?edad=hola`;
-    router.setParams({nom:name,id:100})
-    router.push({ pathname: ruta } as any); // Asegúrate de que el tipo es compatible
+    const ruta = `/establecimiento/${id}`;
+    router.setParams({data:JSON.stringify({
+      nom:"lucas"
+    })})
+    router.push('/(tabs)/contenido/(establecimiento)'); // Asegúrate de que el tipo es compatible
   };
 
   const renderItem = ({ item }: { item: any }) => (
