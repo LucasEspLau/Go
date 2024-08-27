@@ -1,6 +1,9 @@
+import { useRouter } from 'expo-router';
 import { Image, SafeAreaView, Text, View, FlatList, Button, TouchableOpacity } from 'react-native';
 
 export default function ScreenProductos() {
+  const router = useRouter(); // Obtén el hook de enrutamiento
+
   // Datos de ejemplo
   const productos = [
     { id: '1', name: 'Producto 1' },
@@ -14,9 +17,15 @@ export default function ScreenProductos() {
 
     // Agrega más productos según sea necesario
   ];
+  const handlePress = (name: string,id:string) => {
+    router.setParams({data:JSON.stringify({
+      nom:"lucas"
+    })})
+    router.push('/(tabs)/contenido/producto'); // Asegúrate de que el tipo es compatible
+  };
 
   const renderItem = ({ item }:{item:any}) => (
-    <CardProducto name={item.name} />
+    <CardProducto name={item.name} onPress={() => handlePress(item.name,item.id)} />
   );
 
   return (
@@ -33,15 +42,17 @@ export default function ScreenProductos() {
   );
 }
 
-export function CardProducto({ name }: { name: string }) {
+export function CardProducto({ name, onPress }: { name: string; onPress: () => void }) {
   return (
     <View className="flex-1 p-2">
-      <Image
-        className="w-full h-[20vh] rounded-lg border border-gray-300"
-        source={require('@/assets/images/logo.png')}
-      />
-      <Text className="ml-4 text-gray-700 font-semibold">{name}</Text>
-      <Text style={{ color: "#F37A20" }} className="ml-4 font-semibold">100</Text>
+      <TouchableOpacity onPress={onPress} className="flex-1 p-2">
+        <Image
+          className="w-full h-[20vh] rounded-lg border border-gray-300"
+          source={require('@/assets/images/logo.png')}
+        />
+        <Text className="ml-4 text-gray-700 font-semibold">{name}</Text>
+        <Text style={{ color: "#F37A20" }} className="ml-4 font-semibold">100</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={{
           flexDirection: 'row', 

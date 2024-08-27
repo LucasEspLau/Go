@@ -13,7 +13,7 @@ export default function Pedidos(){
             </View>
 
           <View className='border border-1 mt-8 ml-4 mr-4'>
-            <Text className='font-moon mb-4 text-xl'>Establecimiento</Text>
+            <Text className='font-moon mb-4 text-xl'>Pedidos</Text>
             <ScrollView>
               <CardProducto/>
             </ScrollView>
