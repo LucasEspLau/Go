@@ -6,7 +6,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function Establecimiento() {
   const params = useLocalSearchParams();
-  console.log("Dentro de la vista")
+  console.log("Dentro de la vista establecimeinto")
   console.log(params)
 
   return (

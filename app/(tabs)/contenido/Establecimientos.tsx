@@ -21,7 +21,7 @@ export default function ScreenEstablecimientos() {
     router.setParams({data:JSON.stringify({
       nom:"lucas"
     })})
-    router.push('/(tabs)/contenido/(establecimiento)'); // Asegúrate de que el tipo es compatible
+    router.push('/(tabs)/contenido/establecimiento'); // Asegúrate de que el tipo es compatible
   };
 
   const renderItem = ({ item }: { item: any }) => (
