@@ -1,27 +1,35 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, StyleSheet, Alert, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, Alert, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Picker } from '@react-native-picker/picker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
-// Obtener las dimensiones de la pantalla
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [gender, setGender] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState('');
-  const [dni, setDni] = useState('');
-  const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState<string>(''); // specify string type
+  const [email, setEmail] = useState<string>(''); // specify string type
+  const [password, setPassword] = useState<string>(''); // specify string type
+  const [gender, setGender] = useState<string>(''); // specify string type
+  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); // specify Date type or undefined
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false); // specify boolean type
+  const [dni, setDni] = useState<string>(''); // specify string type
+  const [phone, setPhone] = useState<string>(''); // specify string type
   const navigation = useNavigation();
 
   const handleRegister = () => {
     if (username && email && password && gender && dateOfBirth && dni && phone) {
       Alert.alert('Registro exitoso', `Bienvenido, ${username}!`);
-      navigation.navigate('login' as never); // Adjust the route name as needed
+      navigation.navigate('login' as never);
     } else {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
+    }
+  };
+
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const currentDate = selectedDate || dateOfBirth;
+    setShowDatePicker(false);
+    if (currentDate) {
+      setDateOfBirth(currentDate);
     }
   };
 
@@ -32,15 +40,16 @@ export default function RegisterScreen() {
       </View>
 
       <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Registro</Text>
+        <Text style={styles.headerText}>¡Crea tu cuenta!</Text>
       </View>
 
-      <View style={styles.formContainer}>
+      <ScrollView contentContainerStyle={styles.formContainer}>
         <TextInput
           style={styles.input}
           placeholder="Nombres"
           value={username}
           onChangeText={setUsername}
+          placeholderTextColor="#888"
         />
         <TextInput
           style={styles.input}
@@ -48,6 +57,7 @@ export default function RegisterScreen() {
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
+          placeholderTextColor="#888"
         />
         <TextInput
           style={styles.input}
@@ -55,18 +65,31 @@ export default function RegisterScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          placeholderTextColor="#888"
         />
-        <TextInput
+        <TouchableOpacity
           style={styles.input}
-          placeholder="Fecha de Nacimiento"
-          value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-        />
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateText}>
+            {dateOfBirth ? dateOfBirth.toDateString() : 'Selecciona tu fecha de nacimiento'}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={dateOfBirth || new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
         <TextInput
           style={styles.input}
           placeholder="DNI"
           value={dni}
           onChangeText={setDni}
+          placeholderTextColor="#888"
         />
         <TextInput
           style={styles.input}
@@ -74,24 +97,47 @@ export default function RegisterScreen() {
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
+          placeholderTextColor="#888"
         />
-        <Picker
-          selectedValue={gender}
-          style={styles.picker}
-          onValueChange={(itemValue) => setGender(itemValue)}
-        >
-          <Picker.Item label="Selecciona tu género" value="" />
-          <Picker.Item label="Masculino" value="male" />
-          <Picker.Item label="Femenino" value="female" />
-          <Picker.Item label="Otro" value="other" />
-        </Picker>
+
+        <Text style={styles.label}>Género</Text>
+        <View style={styles.genderContainer}>
+          <TouchableOpacity
+            style={[
+              styles.genderButton,
+              gender === 'male' && styles.genderButtonSelected,
+            ]}
+            onPress={() => setGender('male')}
+          >
+            <Text style={styles.genderText}>Masculino</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.genderButton,
+              gender === 'female' && styles.genderButtonSelected,
+            ]}
+            onPress={() => setGender('female')}
+          >
+            <Text style={styles.genderText}>Femenino</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.genderButton,
+              gender === 'other' && styles.genderButtonSelected,
+            ]}
+            onPress={() => setGender('other')}
+          >
+            <Text style={styles.genderText}>Otro</Text>
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Regístrate</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate('login' as never)}>
           <Text style={styles.link}>¿Ya tienes una cuenta? Inicia sesión</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -99,84 +145,102 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#f5f5f5',
-    padding: 16,
   },
   headerWrapper: {
-    width: width * 1.1, // Usa un porcentaje del ancho de la pantalla
-    height: width * 0.45, // Ajusta la altura con base en el ancho para mantener una proporción más pequeña
+    width: width,
+    height: height * 0.15, // Reducir altura del fondo
     backgroundColor: 'rgba(46,39,34,1)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 30,
-    marginBottom: 24,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: '5%',
   },
   logo: {
-    width: 200, // Aumenta el ancho del logo
-    height: 140, // Disminuye la altura del logo para hacerlo más pequeño
+    width: width * 0.5, // Reducir el ancho del logo
+    height: height * 0.10, // Reducir la altura del logo
+    resizeMode: 'contain',
   },
   headerContainer: {
-    width: width * 1.0,
-    height: 70,
+    width: '100%',
     alignItems: 'center',
-    marginBottom: 30,
-    borderRadius: 50,
+    marginBottom: '8%',
   },
   headerText: {
-    fontFamily: 'sans-serif',
-    fontSize: 40,
+    fontFamily: 'sans-serif-condensed',
+    fontSize: 32,
     color: '#230A00',
+    fontWeight: 'bold',
   },
   formContainer: {
     width: '100%',
-    maxWidth: 350,
-    borderRadius: 30,
-    padding: 14,
+    paddingHorizontal: '6%',
+    paddingVertical: '8%',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 40,
-    elevation: 5,
-    marginTop: -40, // Mueve el formulario más arriba
-    marginBottom: 40, // Asegura que no se superponga con el logo
+    backgroundColor: 'transparent', // Hacer el fondo transparente
   },
   input: {
     width: '100%',
-    padding: 12,
-    marginVertical: 8,
+    padding: '3%',
+    marginVertical: '2%',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
   },
-  picker: {
+  dateText: {
+    color: '#888',
+    fontSize: 16,
+    lineHeight: 40,
+  },
+  label: {
     width: '100%',
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
+    fontSize: 18,
+    color: '#888',
+    marginBottom: '2%',
+    textAlign: 'left',
+  },
+  genderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: '6%',
+  },
+  genderButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: '3%',
+    marginHorizontal: '2%',
     borderRadius: 8,
-    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#f5f5f5',
+  },
+  genderButtonSelected: {
+    backgroundColor: '#FA4A0C',
+    borderColor: '#FA4A0C',
+  },
+  genderText: {
+    color: '#333',
   },
   button: {
     width: '100%',
     backgroundColor: '#FA4A0C',
     borderRadius: 30,
-    paddingVertical: 12,
+    paddingVertical: '3.5%',
     alignItems: 'center',
-    marginVertical: 16,
+    marginVertical: '4%',
   },
   buttonText: {
     color: '#F6F6F9',
     fontFamily: 'Abel',
-    fontSize: 24,
+    fontSize: 22,
   },
   link: {
     color: '#FA4A0C',
     fontFamily: 'Abel',
-    fontSize: 17,
+    fontSize: 16,
     textDecorationLine: 'underline',
   },
 });
