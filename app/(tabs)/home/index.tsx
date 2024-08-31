@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { StatusBar } from 'expo-status-bar';
 import { Link, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { establecimientos } from '@/util/data';
 
 
 export default function HomeScreen() {
@@ -58,12 +59,12 @@ export default function HomeScreen() {
 
 
 export function IconCat({img,name,disabled,data}:{img:ImageProps,name:string,disabled:boolean,data:any}){
-
+  data = establecimientos
   return (
     <TouchableOpacity disabled={disabled}>
       <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
         <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
-        <Link href={`/contenido/${name}`as any} >
+        <Link href={`/contenido/${name}?data=${encodeURIComponent(JSON.stringify(data))}`as any} >
           <Text>{name}</Text>
         </Link>
         

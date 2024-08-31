@@ -1,12 +1,19 @@
 import { establecimientos } from '@/util/data';
 import { Establecimiento } from '@/util/definitions';
-import { router, useNavigation, useRouter } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { Image, SafeAreaView, Text, View, FlatList, TouchableOpacity } from 'react-native';
 
 export default function ScreenEstablecimientos() {
 
     const router = useRouter(); // Obtén el hook de enrutamiento
+    const params = useLocalSearchParams();
+    console.log("Dentro de establecimientos")
+    console.log(params)
+    const establecimientosData = JSON.parse(params.data as string);
 
+    console.log("Dentro de establecimientos");
+    console.log(establecimientosData); // Para asegurarte de que los datos están bien parseados
+  
   
   const handlePress = (name: string,id:number) => {
     const ruta = `/establecimiento/${id}`;
