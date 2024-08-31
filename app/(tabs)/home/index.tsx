@@ -6,9 +6,29 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { StatusBar } from 'expo-status-bar';
 import { Link, useNavigation } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 
 export default function HomeScreen() {
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://api.example.com/data'); // Cambia la URL por la de tu API
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className='flex-row min-h-[8vh] items-center justify-between'>
@@ -25,9 +45,8 @@ export default function HomeScreen() {
       <View className='flex flex-col mb-4 border border-1'>
         <Text className='ml-4 text-[2vh] font-moon' style={{fontWeight:'100'}}>Categorías</Text>
         <View className='flex flex-row border border-1 justify-center'>
-          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos'/>        
-          <IconCat img={require('@/assets/images/logo.png')} name='Productos'/>        
-          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos'/>        
+          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading} data={data}/>        
+          <IconCat img={require('@/assets/images/logo.png')} name='Productos' disabled={loading} data={data}/>     
         </View>
       </View>
       <IconPromo/>
@@ -38,18 +57,20 @@ export default function HomeScreen() {
 }
 
 
-export function IconCat({img,name}:{img:ImageProps,name:string}){
+export function IconCat({img,name,disabled,data}:{img:ImageProps,name:string,disabled:boolean,data:any}){
 
   return (
-    
-    <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
-      <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
-      <Link href={`/contenido/${name}`as any} >
-        <Text>{name}</Text>
-      </Link>
-      
+    <TouchableOpacity disabled={disabled}>
+      <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
+        <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
+        <Link href={`/contenido/${name}`as any} >
+          <Text>{name}</Text>
+        </Link>
+        
 
-    </View>
+      </View>
+    </TouchableOpacity>
+
   );
 }
 export function IconPromo() {
