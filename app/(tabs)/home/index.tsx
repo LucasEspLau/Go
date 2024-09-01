@@ -9,15 +9,18 @@ import * as Location from 'expo-location';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { establecimientos } from '@/util/data';
-import { useLocationStore } from '@/store';
+import { useCategoriasEstablecimiento, useCategoriasProducto, useLocationStore } from '@/store';
+import { CategoriaEstablecimiento, CategoriaProducto } from '@/util/definitions';
 
 
 export default function HomeScreen() {
 
-  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const {setUserLocation,setDestinationLocation}=useLocationStore()
+  const {setCategoriasEstablecimiento}=useCategoriasEstablecimiento()
+  const {setCategoriasProducto}=useCategoriasProducto()
+
   const [hasPermission, setHasPermission]= useState(false)
   
   useEffect(()=>{
@@ -45,9 +48,34 @@ export default function HomeScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('https://api.example.com/data'); // Cambia la URL por la de tu API
+        const response = await fetch('https://api.deliverygoperu.com/categorias_establecimiento.php',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: '2342423423423'
+          })
+        }); // Cambia la URL por la de tu API
         const result = await response.json();
-        setData(result);
+        const listaCategoriasEstablecimiento = result as CategoriaEstablecimiento[]
+        setCategoriasEstablecimiento({listaCategoriasEstablecimiento})
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } 
+      try {
+        const response = await fetch('https://api.deliverygoperu.com/categorias_productos.php',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: '2342423423423'
+          })
+        }); // Cambia la URL por la de tu API
+        const result = await response.json();
+        const listaCategoriasProducto = result as CategoriaProducto[]
+        setCategoriasProducto({listaCategoriasProducto})
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -73,8 +101,8 @@ export default function HomeScreen() {
       <View className='flex flex-col mb-4 border border-1'>
         <Text className='ml-4 text-[2vh] font-moon' style={{fontWeight:'100'}}>Categorías</Text>
         <View className='flex flex-row border border-1 justify-center'>
-          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading} data={data}/>        
-          <IconCat img={require('@/assets/images/logo.png')} name='Productos' disabled={loading} data={data}/>     
+          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading}/>        
+          <IconCat img={require('@/assets/images/logo.png')} name='Productos' disabled={loading}/>     
         </View>
       </View>
       <IconPromo/>
@@ -85,13 +113,13 @@ export default function HomeScreen() {
 }
 
 
-export function IconCat({img,name,disabled,data}:{img:ImageProps,name:string,disabled:boolean,data:any}){
-  data = establecimientos
+export function IconCat({img,name,disabled}:{img:ImageProps,name:string,disabled:boolean}){
+
   return (
     <TouchableOpacity disabled={disabled}>
       <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
         <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
-        <Link href={`/contenido/${name}?data=${encodeURIComponent(JSON.stringify(data))}`as any} >
+        <Link href={`/contenido/${name}}`as any} >
           <Text>{name}</Text>
         </Link>
         
