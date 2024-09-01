@@ -24,21 +24,24 @@ export default function Pedidos(){
 
 function CardProducto(){
     return(
-      <View className="flex flex-row p-2 border border-1">
-        <Image
-          className="w-[15vh] h-[15vh] rounded-3xl border border-1"
-          source={require('@/assets/images/logo.png')}
-        />
-        <View className='flex flex-col justify-around'>
-          <Text className="ml-4 text-black font-moon mb-2">Producto 1</Text>
-  
-          <Text className="ml-4 text-gray-700 font-semibold mb-2">Detalle producto</Text>
-          <View className='flex flex-row items-center ml-4 '> 
-            <FontAwesome5 name="shopping-bag" size={24} color="black" style={{ marginRight: 8 }} />
-            <Text className="text-gray-700 font-semibold">Precio: $100</Text>
+      <Link href={"/mapa"}>
+        <View className="flex flex-row p-2 border border-1">
+          <Image
+            className="w-[15vh] h-[15vh] rounded-3xl border border-1"
+            source={require('@/assets/images/logo.png')}
+          />
+          <View className='flex flex-col justify-around'>
+            <Text className="ml-4 text-black font-moon mb-2">Producto 1</Text>
+    
+            <Text className="ml-4 text-gray-700 font-semibold mb-2">Detalle producto</Text>
+            <View className='flex flex-row items-center ml-4 '> 
+              <FontAwesome5 name="shopping-bag" size={24} color="black" style={{ marginRight: 8 }} />
+              <Text className="text-gray-700 font-semibold">Precio: $100</Text>
+            </View>
           </View>
+    
         </View>
-  
-      </View>
+      </Link>
+
     )
   }
