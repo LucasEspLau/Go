@@ -12,7 +12,7 @@ export default function ScreenProductos() {
   const fetchProductos = async () => {
     try {
       const response = await axios.post('https://api.deliverygoperu.com/productos.php', {
-        token: '2342423423423', // Reemplaza con el token correcto
+        token: '2342423423423', 
       });
       setProductos(response.data);
     } catch (error) {

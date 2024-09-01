@@ -6,19 +6,20 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
-  const [username, setUsername] = useState<string>(''); // specify string type
-  const [email, setEmail] = useState<string>(''); // specify string type
-  const [password, setPassword] = useState<string>(''); // specify string type
-  const [gender, setGender] = useState<string>(''); // specify string type
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); // specify Date type or undefined
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(false); // specify boolean type
-  const [dni, setDni] = useState<string>(''); // specify string type
-  const [phone, setPhone] = useState<string>(''); // specify string type
+  const [firstName, setFirstName] = useState<string>(''); // nombre
+  const [lastName, setLastName] = useState<string>(''); // apellido
+  const [email, setEmail] = useState<string>(''); // correo
+  const [password, setPassword] = useState<string>(''); // contraseña
+  const [gender, setGender] = useState<string>(''); // sexo
+  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); // fecha_nacimiento
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false); // mostrar selector de fecha
+  const [dni, setDni] = useState<string>(''); // dni
+  const [phone, setPhone] = useState<string>(''); // teléfono
   const navigation = useNavigation();
 
   const handleRegister = () => {
-    if (username && email && password && gender && dateOfBirth && dni && phone) {
-      Alert.alert('Registro exitoso', `Bienvenido, ${username}!`);
+    if (firstName && lastName && email && password && gender && dateOfBirth && dni && phone) {
+      Alert.alert('Registro exitoso', `Bienvenido, ${firstName}!`);
       navigation.navigate('login' as never);
     } else {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
@@ -47,8 +48,15 @@ export default function RegisterScreen() {
         <TextInput
           style={styles.input}
           placeholder="Nombres"
-          value={username}
-          onChangeText={setUsername}
+          value={firstName}
+          onChangeText={setFirstName}
+          placeholderTextColor="#888"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Apellidos"
+          value={lastName}
+          onChangeText={setLastName}
           placeholderTextColor="#888"
         />
         <TextInput
@@ -141,7 +149,6 @@ export default function RegisterScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -149,7 +156,7 @@ const styles = StyleSheet.create({
   },
   headerWrapper: {
     width: width,
-    height: height * 0.15, // Reducir altura del fondo
+    height: height * 0.15,
     backgroundColor: 'rgba(46,39,34,1)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -158,8 +165,8 @@ const styles = StyleSheet.create({
     marginBottom: '5%',
   },
   logo: {
-    width: width * 0.5, // Reducir el ancho del logo
-    height: height * 0.10, // Reducir la altura del logo
+    width: width * 0.5,
+    height: height * 0.10,
     resizeMode: 'contain',
   },
   headerContainer: {
@@ -178,7 +185,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: '6%',
     paddingVertical: '8%',
     alignItems: 'center',
-    backgroundColor: 'transparent', // Hacer el fondo transparente
+    backgroundColor: 'transparent',
   },
   input: {
     width: '100%',
