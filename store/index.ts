@@ -1,4 +1,4 @@
-import { CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, LocationStore } from "@/util/definitions";
+import { CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, Establecimiento, EstablecimientosXArea, LocationStore } from "@/util/definitions";
 import { create } from "zustand";
 
 export const useLocationStore = create<LocationStore>((set) => ({
@@ -64,6 +64,19 @@ export const useCategoriasProducto=create<CategoriasProducto>((set)=>({
     }) => {
         set(() => ({
             listaCategoriasProducto: listaCategoriasProducto,
+        }));
+    }
+}))
+
+export const useEstablecimientosXArea = create<EstablecimientosXArea>((set)=>({
+    listaEstablecimientos:null,
+    setEstablecimientosXArea:({
+        listaEstablecimientos,
+    }:{
+        listaEstablecimientos: Establecimiento[];
+    })=>{
+        set(()=>({
+            listaEstablecimientos: listaEstablecimientos,
         }));
     }
 }))

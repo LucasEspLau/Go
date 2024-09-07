@@ -5,9 +5,12 @@ export type Establecimiento = {
     descripcion_establecimiento: string;
     horario_inicio: string;
     horario_fin: string;
-    tiempo_preparacion: string;
+    tiempo_preparacion: number;
     estado: number;
     categoria: number;
+    latitud:number;
+    longitud:number;
+    area?:number;
 }
 
 export type CategoriaEstablecimiento ={
@@ -74,3 +77,11 @@ export declare interface CategoriasProducto {
 
 }
 
+export declare interface EstablecimientosXArea{
+    listaEstablecimientos: Establecimiento[]|null;
+    setEstablecimientosXArea: ({
+        listaEstablecimientos,
+    }: {
+        listaEstablecimientos: Establecimiento[];
+    }) => void;
+}
