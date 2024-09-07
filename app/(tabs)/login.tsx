@@ -12,7 +12,7 @@ export default function LoginScreen() {
   const handleLogin = () => {
     if (email && password) {
       Alert.alert('Inicio de sesión exitoso', `Bienvenido de nuevo!`);
-      navigation.navigate('home' as never);
+      navigation.navigate('selectArea' as never);
     } else {
       Alert.alert('Error', 'Por favor, ingrese su correo electrónico y contraseña.');
     }

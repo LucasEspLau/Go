@@ -21,6 +21,8 @@ export default function RootLayout() {
         <Stack.Screen name="main" options={{ headerShown: false }}/>
         <Stack.Screen name="register" options={{ headerShown: false }}/>
         <Stack.Screen name="login" options={{ headerShown: false }}/>
+        <Stack.Screen name="selectArea" options={{ headerShown: false }}/>
+        <Stack.Screen name="mapArea" options={{ headerShown: false }}/>
         <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="contenido" options={{ headerShown: false }} />
         <Stack.Screen name="mapa" options={{ headerShown: false }} />
