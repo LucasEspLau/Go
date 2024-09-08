@@ -1,4 +1,4 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { FlatList, ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router"; // Hook de Expo Router
 import { useEffect, useState } from "react";
@@ -15,9 +15,9 @@ const lista = [
 
 export default function SelectArea() {
   const router = useRouter(); // Obtén el hook de enrutamiento
-  const {setUserLocation,setDestinationLocation}=useLocationStore()
-  const {setEstablecimientosXArea}=useEstablecimientosXArea()
-  const [hasPermission, setHasPermission]= useState(false)
+  const { setUserLocation, setDestinationLocation } = useLocationStore();
+  const { setEstablecimientosXArea } = useEstablecimientosXArea();
+  const [hasPermission, setHasPermission] = useState(false);
 
   const handlePress = (id: number) => {
     const filterEstablecimiento = establecimientos.filter(
@@ -25,44 +25,57 @@ export default function SelectArea() {
     );
 
     // Si deseas hacer algo con los establecimientos filtrados, puedes usar un store
-    setEstablecimientosXArea({listaEstablecimientos:filterEstablecimiento});
+    setEstablecimientosXArea({ listaEstablecimientos: filterEstablecimiento });
     router.push(`/mapArea?id=${id}`); // Navega a 'mapArea' pasando el id como parámetro
   };
 
-  useEffect(()=>{
-    const requestLocation= async()=>{
-      let {status}=await Location.requestForegroundPermissionsAsync();
-      if(status!=='granted'){
-        setHasPermission(false)
-        return
+  useEffect(() => {
+    const requestLocation = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setHasPermission(false);
+        return;
       }
 
-      let location=await Location.getCurrentPositionAsync();
-      const address=await Location.reverseGeocodeAsync({
+      let location = await Location.getCurrentPositionAsync();
+      const address = await Location.reverseGeocodeAsync({
         latitude: location.coords?.latitude!,
         longitude: location.coords?.longitude!,
       });
       setUserLocation({
-        latitude:location.coords.latitude,
-        longitude:location.coords.longitude,
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
         address: `${address[0].name}, ${address[0].region}`,
-      })
+      });
     }
-    requestLocation()
-  },[])
+    requestLocation();
+  }, []);
+
+  const renderItem = ({ item }: { item: { id: number; nombre: string } }) => (
+    <TouchableOpacity
+      key={item.id}
+      onPress={() => handlePress(item.id)} // Agrega la función de manejo de evento onPress
+      style={{ padding: 10, borderWidth: 1,minHeight:150, borderColor: "gray", flex: 1 }}
+      className="m-2 items-center justify-center rounded-xl"
+    >
+      <Text>{item.nombre}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView>
-        {lista.map((item) => (
-          <TouchableOpacity 
-            key={item.id} 
-            onPress={() => handlePress(item.id)} // Agrega la función de manejo de evento onPress
-            style={{ padding: 10, borderWidth: 1, borderColor: "gray" }}
-          >
-            <Text>{item.nombre}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+    <SafeAreaView className="flex-1 bg-white p-4">
+        <Text style={{ fontSize: 20, fontWeight: 'bold' }}
+        className="text-center pt-2 pb-2">
+          Seleccione el Área preferencia
+        </Text>
+
+      <FlatList
+        data={lista}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={2} // Número de columnas
+        columnWrapperStyle={{ justifyContent: 'space-between' }} // Espacio entre columnas
+      />
     </SafeAreaView>
   );
 }

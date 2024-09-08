@@ -16,7 +16,7 @@ export const establecimientos: Establecimiento[] = [
         area:1
     },
     {
-        id_establecimiento: 1,
+        id_establecimiento: 2,
         nombre_establecimiento: "400 GRILL",
         logo_establecimiento: "https://deliverygoperu.com/imagenes/establecimiento.jpg",
         descripcion_establecimiento: "ASDASDSAD ",
@@ -30,7 +30,7 @@ export const establecimientos: Establecimiento[] = [
         area:2
     },
     {
-        id_establecimiento: 1,
+        id_establecimiento: 3,
         nombre_establecimiento: "400 GRILL",
         logo_establecimiento: "https://deliverygoperu.com/imagenes/establecimiento.jpg",
         descripcion_establecimiento: "ASDASDSAD ",
@@ -44,7 +44,7 @@ export const establecimientos: Establecimiento[] = [
         area:3
     },
     {
-        id_establecimiento: 1,
+        id_establecimiento: 4,
         nombre_establecimiento: "400 GRILL",
         logo_establecimiento: "https://deliverygoperu.com/imagenes/establecimiento.jpg",
         descripcion_establecimiento: "ASDASDSAD ",
