@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Image, StyleSheet, Alert, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons'; // Para el ícono de mostrar/ocultar contraseña
 
 const { width, height } = Dimensions.get('window');
 
@@ -14,52 +15,71 @@ export default function RegisterScreen() {
   const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); 
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false); 
   const [dni, setDni] = useState<string>(''); 
-  const [phone, setPhone] = useState<string>(''); 
+  const [phone, setPhone] = useState<string>('');
 
   const [phoneError, setPhoneError] = useState<string>('');
   const [dniError, setDniError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false); // Estado para mostrar/ocultar contraseña
 
   const navigation = useNavigation();
 
+  const validatePassword = (password: string): boolean => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return (
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasDigit &&
+      hasSpecialChar
+    );
+  };
+
   const handleRegister = async () => {
-    // Resetear errores
     setPhoneError('');
     setDniError('');
     setEmailError('');
-  
-    // Validaciones
+    setPasswordError('');
+
     if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !dni || !phone) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
       return;
     }
-  
-    // Validar teléfono
+
     if (phone.length !== 9) {
       setPhoneError('El teléfono debe tener 9 dígitos.');
       return;
     }
-  
-    // Validar DNI
+
     if (dni.length !== 8) {
       setDniError('El DNI debe tener 8 dígitos.');
       return;
     }
-  
-    // Validar correo electrónico
+
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       setEmailError('Ingrese un correo electrónico válido (ejemplo@dominio.com).');
       return;
     }
-  
+
+    if (!validatePassword(password)) {
+      setPasswordError('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial.');
+      return;
+    }
+
     try {
       const genderMap: { [key: string]: string } = {
         male: '1',
         female: '2',
         other: '3',
       };
-  
+
       const formData = {
         token: '2342423423423', 
         cliente: `${firstName} ${lastName}`,
@@ -70,10 +90,7 @@ export default function RegisterScreen() {
         telf: phone,
         dni: dni,
       };
-  
-      console.log('Enviando solicitud de registro con datos:', formData);
-  
-      // Enviar solicitud de registro
+
       const response = await fetch('https://api.deliverygoperu.com/registro_usuario.php', {
         method: 'POST',
         headers: {
@@ -81,24 +98,19 @@ export default function RegisterScreen() {
         },
         body: JSON.stringify(formData),
       });
-  
-      console.log('Respuesta del servidor:', response);
-  
+
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const result = await response.json();
-        console.log('Resultado del registro:', result);
-  
+
         if (response.ok) {
-          // Mostrar el código de verificación en una alerta
           const message = result.mensaje || '';
           const codeMatch = message.match(/codigo\s*=\s*(\d+)/);
           if (codeMatch) {
             const code = codeMatch[1];
             Alert.alert('Código de Verificación', `El código de verificación es: ${code}`);
           }
-  
-          // Enviar código de verificación por SMS
+
           const verificationResponse = await fetch('https://api.deliverygoperu.com/enviar_codigo_sms.php', {
             method: 'POST',
             headers: {
@@ -106,7 +118,7 @@ export default function RegisterScreen() {
             },
             body: JSON.stringify({ telf: phone }), 
           });
-  
+
           if (verificationResponse.ok) {
             navigation.navigate('verification' as never); 
           } 
@@ -122,7 +134,6 @@ export default function RegisterScreen() {
       Alert.alert('Error', 'No se pudo conectar al servidor.');
     }
   };
-  
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || dateOfBirth;
@@ -163,20 +174,37 @@ export default function RegisterScreen() {
           value={email}
           onChangeText={(text) => {
             setEmail(text);
-            setEmailError(''); // Limpiar el error al escribir
+            setEmailError(''); 
           }}
           keyboardType="email-address"
           placeholderTextColor="#888"
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#888"
-        />
+
+        {/* Campo de Contraseña */}
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={[styles.input, { flex: 1 }]}
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              setPasswordError('');
+            }}
+            secureTextEntry={!showPassword} 
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? 'eye-off' : 'eye'}
+              size={24}
+              color="gray"
+              style={styles.eyeIcon}
+            />
+          </TouchableOpacity>
+        </View>
+        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
         <TouchableOpacity
           style={styles.input}
           onPress={() => setShowDatePicker(true)}
@@ -200,7 +228,7 @@ export default function RegisterScreen() {
           value={dni}
           onChangeText={(text) => {
             setDni(text);
-            setDniError(''); // Limpiar el error al escribir
+            setDniError('');
           }}
           placeholderTextColor="#888"
         />
@@ -211,49 +239,35 @@ export default function RegisterScreen() {
           value={phone}
           onChangeText={(text) => {
             setPhone(text);
-            setPhoneError(''); // Limpiar el error al escribir
+            setPhoneError('');
           }}
           keyboardType="phone-pad"
           placeholderTextColor="#888"
         />
         {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
-
-        <Text style={styles.label}>Género</Text>
         <View style={styles.genderContainer}>
           <TouchableOpacity
-            style={[
-              styles.genderButton,
-              gender === 'male' && styles.genderButtonSelected,
-            ]}
+            style={[styles.genderButton, gender === 'male' && styles.selectedGenderButton]}
             onPress={() => setGender('male')}
           >
             <Text style={styles.genderText}>Masculino</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.genderButton,
-              gender === 'female' && styles.genderButtonSelected,
-            ]}
+            style={[styles.genderButton, gender === 'female' && styles.selectedGenderButton]}
             onPress={() => setGender('female')}
           >
             <Text style={styles.genderText}>Femenino</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.genderButton,
-              gender === 'other' && styles.genderButtonSelected,
-            ]}
+            style={[styles.genderButton, gender === 'other' && styles.selectedGenderButton]}
             onPress={() => setGender('other')}
           >
             <Text style={styles.genderText}>Otro</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Regístrate</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('login' as never)}>
-          <Text style={styles.link}>¿Ya tienes una cuenta? Inicia sesión</Text>
+        <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+          <Text style={styles.registerButtonText}>Registrarse</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -263,87 +277,88 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 20,
+    padding: 16,
+    backgroundColor: '#fff',
   },
   headerWrapper: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
   },
   logo: {
     width: 150,
-    height: 50,
+    height: 150,
+    resizeMode: 'contain',
   },
   headerContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   headerText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    textAlign: 'center',
   },
   formContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   input: {
-    height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-    backgroundColor: '#fff',
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+    fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 16,
+    borderRadius: 8,
+  },
+  eyeIcon: {
+    marginLeft: 10,
   },
   dateText: {
-    lineHeight: 50,
-    color: '#333',
+    fontSize: 16,
   },
   genderContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   genderButton: {
     flex: 1,
-    height: 50,
-    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    borderColor: '#ccc',
+    padding: 12,
     marginHorizontal: 5,
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  genderButtonSelected: {
+  selectedGenderButton: {
     backgroundColor: '#007BFF',
+    borderColor: '#007BFF',
   },
   genderText: {
+    fontSize: 16,
     color: '#333',
   },
-  button: {
+  registerButton: {
     backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
+    padding: 16,
+    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 10,
   },
-  buttonText: {
+  registerButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-  },
-  link: {
-    color: '#007BFF',
-    textAlign: 'center',
   },
   errorText: {
     color: 'red',
-    marginBottom: 10,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 14,
+    marginBottom: 8,
   },
 });
