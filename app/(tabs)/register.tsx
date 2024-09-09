@@ -15,14 +15,88 @@ export default function RegisterScreen() {
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false); // mostrar selector de fecha
   const [dni, setDni] = useState<string>(''); // dni
   const [phone, setPhone] = useState<string>(''); // teléfono
+
+  // Errores
+  const [phoneError, setPhoneError] = useState<string>('');
+  const [dniError, setDniError] = useState<string>('');
+  const [emailError, setEmailError] = useState<string>('');
+
   const navigation = useNavigation();
 
-  const handleRegister = () => {
-    if (firstName && lastName && email && password && gender && dateOfBirth && dni && phone) {
-      Alert.alert('Registro exitoso', `Bienvenido, ${firstName}!`);
-      navigation.navigate('login' as never);
-    } else {
+  const handleRegister = async () => {
+    // Resetear errores
+    setPhoneError('');
+    setDniError('');
+    setEmailError('');
+
+    // Validaciones
+    if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !dni || !phone) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
+      return;
+    }
+
+    // Validar teléfono
+    if (phone.length !== 9) {
+      setPhoneError('El teléfono debe tener 9 dígitos.');
+      return;
+    }
+
+    // Validar DNI
+    if (dni.length !== 8) {
+      setDniError('El DNI debe tener 8 dígitos.');
+      return;
+    }
+
+    // Validar correo electrónico
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+      setEmailError('Ingrese un correo electrónico válido (ejemplo@dominio.com).');
+      return;
+    }
+
+    try {
+      const genderMap: { [key: string]: string } = {
+        male: '1',
+        female: '2',
+        other: '3',
+      };
+
+      const formData = {
+        token: '2342423423423', // Example token, replace with actual token if needed
+        cliente: `${firstName} ${lastName}`,
+        clave: password,
+        sexo: genderMap[gender] || '',
+        correo: email,
+        fecha_nacimiento: dateOfBirth?.toISOString().split('T')[0] || '',
+        telf: phone,
+        dni: dni,
+      };
+
+      const response = await fetch('https://api.deliverygoperu.com/registro_usuario.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+
+        if (response.ok) {
+          Alert.alert('Registro exitoso', `Bienvenido, ${firstName}!`);
+          navigation.navigate('login' as never);
+        } else {
+          Alert.alert('Error', result.mensaje || 'Hubo un problema al registrar.');
+        }
+      } else {
+        const text = await response.text();
+        Alert.alert('Error', `Respuesta inesperada del servidor: ${text}`);
+      }
+    } catch (error) {
+      console.error('Error al registrar:', error);
+      Alert.alert('Error', 'No se pudo conectar al servidor.');
     }
   };
 
@@ -63,10 +137,14 @@ export default function RegisterScreen() {
           style={styles.input}
           placeholder="Correo Electrónico"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setEmailError(''); // Limpiar el error al escribir
+          }}
           keyboardType="email-address"
           placeholderTextColor="#888"
         />
+        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Contraseña"
@@ -96,17 +174,25 @@ export default function RegisterScreen() {
           style={styles.input}
           placeholder="DNI"
           value={dni}
-          onChangeText={setDni}
+          onChangeText={(text) => {
+            setDni(text);
+            setDniError(''); // Limpiar el error al escribir
+          }}
           placeholderTextColor="#888"
         />
+        {dniError ? <Text style={styles.errorText}>{dniError}</Text> : null}
         <TextInput
           style={styles.input}
           placeholder="Teléfono"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(text) => {
+            setPhone(text);
+            setPhoneError(''); // Limpiar el error al escribir
+          }}
           keyboardType="phone-pad"
           placeholderTextColor="#888"
         />
+        {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
 
         <Text style={styles.label}>Género</Text>
         <View style={styles.genderContainer}>
@@ -149,6 +235,7 @@ export default function RegisterScreen() {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -178,76 +265,78 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif-condensed',
     fontSize: 32,
     color: '#230A00',
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   formContainer: {
-    width: '100%',
-    paddingHorizontal: '6%',
-    paddingVertical: '8%',
+    padding: 20,
     alignItems: 'center',
-    backgroundColor: 'transparent',
   },
   input: {
     width: '100%',
-    padding: '3%',
-    marginVertical: '2%',
-    borderRadius: 8,
-    borderWidth: 1,
+    height: 50,
     borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    marginVertical: 10,
     backgroundColor: '#fff',
   },
-  dateText: {
-    color: '#888',
+  button: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#230A00',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  buttonText: {
+    color: '#fff',
     fontSize: 16,
-    lineHeight: 40,
+    fontWeight: '700',
+  },
+  link: {
+    color: '#230A00',
+    fontSize: 16,
+    textDecorationLine: 'underline',
+    marginTop: 10,
   },
   label: {
-    width: '100%',
-    fontSize: 18,
-    color: '#888',
-    marginBottom: '2%',
-    textAlign: 'left',
+    fontSize: 16,
+    color: '#230A00',
+    fontWeight: '500',
+    marginVertical: 10,
   },
   genderContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: '6%',
+    marginBottom: 20,
   },
   genderButton: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: '3%',
-    marginHorizontal: '2%',
-    borderRadius: 8,
+    height: 40,
+    borderColor: '#230A00',
     borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 5,
   },
   genderButtonSelected: {
-    backgroundColor: '#FA4A0C',
-    borderColor: '#FA4A0C',
+    backgroundColor: '#230A00',
   },
   genderText: {
-    color: '#333',
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#FA4A0C',
-    borderRadius: 30,
-    paddingVertical: '3.5%',
-    alignItems: 'center',
-    marginVertical: '4%',
-  },
-  buttonText: {
-    color: '#F6F6F9',
-    fontFamily: 'Abel',
-    fontSize: 22,
-  },
-  link: {
-    color: '#FA4A0C',
-    fontFamily: 'Abel',
+    color: '#230A00',
     fontSize: 16,
-    textDecorationLine: 'underline',
+  },
+  dateText: {
+    color: '#888',
+    fontSize: 16,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginVertical: '1%',
   },
 });
