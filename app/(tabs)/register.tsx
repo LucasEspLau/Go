@@ -6,17 +6,16 @@ import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/dat
 const { width, height } = Dimensions.get('window');
 
 export default function RegisterScreen() {
-  const [firstName, setFirstName] = useState<string>(''); // nombre
-  const [lastName, setLastName] = useState<string>(''); // apellido
-  const [email, setEmail] = useState<string>(''); // correo
-  const [password, setPassword] = useState<string>(''); // contraseña
-  const [gender, setGender] = useState<string>(''); // sexo
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); // fecha_nacimiento
-  const [showDatePicker, setShowDatePicker] = useState<boolean>(false); // mostrar selector de fecha
-  const [dni, setDni] = useState<string>(''); // dni
-  const [phone, setPhone] = useState<string>(''); // teléfono
+  const [firstName, setFirstName] = useState<string>(''); 
+  const [lastName, setLastName] = useState<string>(''); 
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>(''); 
+  const [gender, setGender] = useState<string>(''); 
+  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined); 
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false); 
+  const [dni, setDni] = useState<string>(''); 
+  const [phone, setPhone] = useState<string>(''); 
 
-  // Errores
   const [phoneError, setPhoneError] = useState<string>('');
   const [dniError, setDniError] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
@@ -28,41 +27,41 @@ export default function RegisterScreen() {
     setPhoneError('');
     setDniError('');
     setEmailError('');
-
+  
     // Validaciones
     if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !dni || !phone) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
       return;
     }
-
+  
     // Validar teléfono
     if (phone.length !== 9) {
       setPhoneError('El teléfono debe tener 9 dígitos.');
       return;
     }
-
+  
     // Validar DNI
     if (dni.length !== 8) {
       setDniError('El DNI debe tener 8 dígitos.');
       return;
     }
-
+  
     // Validar correo electrónico
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       setEmailError('Ingrese un correo electrónico válido (ejemplo@dominio.com).');
       return;
     }
-
+  
     try {
       const genderMap: { [key: string]: string } = {
         male: '1',
         female: '2',
         other: '3',
       };
-
+  
       const formData = {
-        token: '2342423423423', // Example token, replace with actual token if needed
+        token: '2342423423423', 
         cliente: `${firstName} ${lastName}`,
         clave: password,
         sexo: genderMap[gender] || '',
@@ -71,7 +70,10 @@ export default function RegisterScreen() {
         telf: phone,
         dni: dni,
       };
-
+  
+      console.log('Enviando solicitud de registro con datos:', formData);
+  
+      // Enviar solicitud de registro
       const response = await fetch('https://api.deliverygoperu.com/registro_usuario.php', {
         method: 'POST',
         headers: {
@@ -79,14 +81,35 @@ export default function RegisterScreen() {
         },
         body: JSON.stringify(formData),
       });
-
+  
+      console.log('Respuesta del servidor:', response);
+  
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const result = await response.json();
-
+        console.log('Resultado del registro:', result);
+  
         if (response.ok) {
-          Alert.alert('Registro exitoso', `Bienvenido, ${firstName}!`);
-          navigation.navigate('login' as never);
+          // Mostrar el código de verificación en una alerta
+          const message = result.mensaje || '';
+          const codeMatch = message.match(/codigo\s*=\s*(\d+)/);
+          if (codeMatch) {
+            const code = codeMatch[1];
+            Alert.alert('Código de Verificación', `El código de verificación es: ${code}`);
+          }
+  
+          // Enviar código de verificación por SMS
+          const verificationResponse = await fetch('https://api.deliverygoperu.com/enviar_codigo_sms.php', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ telf: phone }), 
+          });
+  
+          if (verificationResponse.ok) {
+            navigation.navigate('verification' as never); 
+          } 
         } else {
           Alert.alert('Error', result.mensaje || 'Hubo un problema al registrar.');
         }
@@ -99,6 +122,7 @@ export default function RegisterScreen() {
       Alert.alert('Error', 'No se pudo conectar al servidor.');
     }
   };
+  
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || dateOfBirth;
@@ -240,103 +264,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    padding: 20,
   },
   headerWrapper: {
-    width: width,
-    height: height * 0.15,
-    backgroundColor: 'rgba(46,39,34,1)',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: '5%',
+    marginBottom: 20,
   },
   logo: {
-    width: width * 0.5,
-    height: height * 0.10,
-    resizeMode: 'contain',
+    width: 150,
+    height: 50,
   },
   headerContainer: {
-    width: '100%',
     alignItems: 'center',
-    marginBottom: '8%',
+    marginBottom: 20,
   },
   headerText: {
-    fontFamily: 'sans-serif-condensed',
-    fontSize: 32,
-    color: '#230A00',
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
   },
   formContainer: {
-    padding: 20,
-    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
   },
   input: {
-    width: '100%',
     height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    marginVertical: 10,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
     backgroundColor: '#fff',
   },
-  button: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#230A00',
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  link: {
-    color: '#230A00',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-    marginTop: 10,
-  },
-  label: {
-    fontSize: 16,
-    color: '#230A00',
-    fontWeight: '500',
-    marginVertical: 10,
+  dateText: {
+    lineHeight: 50,
+    color: '#333',
   },
   genderContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
     marginBottom: 20,
   },
   genderButton: {
     flex: 1,
-    height: 40,
-    borderColor: '#230A00',
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 5,
   },
   genderButtonSelected: {
-    backgroundColor: '#230A00',
+    backgroundColor: '#007BFF',
   },
   genderText: {
-    color: '#230A00',
-    fontSize: 16,
+    color: '#333',
   },
-  dateText: {
-    color: '#888',
+  button: {
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  link: {
+    color: '#007BFF',
+    textAlign: 'center',
   },
   errorText: {
     color: 'red',
-    fontSize: 14,
-    marginVertical: '1%',
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
 });
