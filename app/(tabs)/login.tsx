@@ -1,18 +1,48 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions, Image, ScrollView } from 'react-native';
 import { useNavigation } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons'; // Importa los íconos de Expo
 
 const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const navigation = useNavigation();
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (email && password) {
-      Alert.alert('Inicio de sesión exitoso', `Bienvenido de nuevo!`);
-      navigation.navigate('selectArea' as never);
+      try {
+        const response = await fetch('https://api.deliverygoperu.com/login.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            usuario: email,
+            clave: password,
+          }),
+        });
+
+        const result = await response.json();
+
+        console.log('API Response:', result); // Imprime la respuesta de la API en la consola
+
+        if (response.ok) {
+          if (result.status === 'success') {
+            Alert.alert('Inicio de sesión exitoso', '¡Bienvenido de nuevo!');
+            navigation.navigate('selectArea' as never);
+          } else {
+            Alert.alert('Error', result.mensaje || 'Error al iniciar sesión.');
+          }
+        } else {
+          Alert.alert('Error', 'Respuesta no esperada del servidor.');
+        }
+      } catch (error) {
+        console.error('Error al conectar con el servidor:', error); // Imprime el error en la consola
+        Alert.alert('Error', 'No se pudo conectar con el servidor.');
+      }
     } else {
       Alert.alert('Error', 'Por favor, ingrese su correo electrónico y contraseña.');
     }
@@ -20,15 +50,14 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      
-        <View style={styles.headerWrapper}>
-          <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
-        </View>
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.headerWrapper}>
+        <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
           <Text style={styles.headerText}>INICIAR SESIÓN</Text>
         </View>
-      
+
         <View style={styles.formContainer}>
           <TextInput
             style={styles.input}
@@ -38,14 +67,26 @@ export default function LoginScreen() {
             keyboardType="email-address"
             placeholderTextColor="#888"
           />
-          <TextInput
-            style={styles.input}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            placeholderTextColor="#888"
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Contraseña"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              placeholderTextColor="#888"
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <MaterialIcons 
+                name={showPassword ? 'visibility-off' : 'visibility'} 
+                size={24} 
+                color="#888" 
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
             <Text style={styles.buttonText}>Iniciar Sesión</Text>
@@ -112,6 +153,20 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     backgroundColor: '#fff',
   },
+  passwordContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#fff',
+    marginVertical: '2%',
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 10,
+  },
   button: {
     width: '100%',
     backgroundColor: '#FA4A0C',
@@ -132,7 +187,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-
-
-
-

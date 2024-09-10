@@ -46,42 +46,42 @@ export default function RegisterScreen() {
     setDniError('');
     setEmailError('');
     setPasswordError('');
-
+  
     if (!firstName || !lastName || !email || !password || !gender || !dateOfBirth || !dni || !phone) {
       Alert.alert('Error', 'Por favor, complete todos los campos.');
       return;
     }
-
+  
     if (phone.length !== 9) {
       setPhoneError('El teléfono debe tener 9 dígitos.');
       return;
     }
-
+  
     if (dni.length !== 8) {
       setDniError('El DNI debe tener 8 dígitos.');
       return;
     }
-
+  
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailPattern.test(email)) {
       setEmailError('Ingrese un correo electrónico válido (ejemplo@dominio.com).');
       return;
     }
-
+  
     if (!validatePassword(password)) {
       setPasswordError('La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula, un número y un carácter especial.');
       return;
     }
-
+  
     try {
       const genderMap: { [key: string]: string } = {
         male: '1',
         female: '2',
         other: '3',
       };
-
+  
       const formData = {
-        token: '2342423423423', 
+        token: '2342423423423',
         cliente: `${firstName} ${lastName}`,
         clave: password,
         sexo: genderMap[gender] || '',
@@ -90,7 +90,9 @@ export default function RegisterScreen() {
         telf: phone,
         dni: dni,
       };
-
+  
+      console.log('Datos enviados:', formData);
+  
       const response = await fetch('https://api.deliverygoperu.com/registro_usuario.php', {
         method: 'POST',
         headers: {
@@ -98,11 +100,12 @@ export default function RegisterScreen() {
         },
         body: JSON.stringify(formData),
       });
-
+  
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const result = await response.json();
-
+        console.log('Respuesta de la API:', result);
+  
         if (response.ok) {
           const message = result.mensaje || '';
           const codeMatch = message.match(/codigo\s*=\s*(\d+)/);
@@ -110,23 +113,25 @@ export default function RegisterScreen() {
             const code = codeMatch[1];
             Alert.alert('Código de Verificación', `El código de verificación es: ${code}`);
           }
-
+  
           const verificationResponse = await fetch('https://api.deliverygoperu.com/enviar_codigo_sms.php', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ telf: phone }), 
+            body: JSON.stringify({ telf: phone }),
           });
-
+  
           if (verificationResponse.ok) {
-            navigation.navigate('verification' as never); 
-          } 
+            console.log('Navegando a la pantalla de verificación');
+            navigation.navigate('verification' as never);
+          }
         } else {
           Alert.alert('Error', result.mensaje || 'Hubo un problema al registrar.');
         }
       } else {
         const text = await response.text();
+        console.log('Respuesta en bruto:', text);
         Alert.alert('Error', `Respuesta inesperada del servidor: ${text}`);
       }
     } catch (error) {
@@ -134,6 +139,8 @@ export default function RegisterScreen() {
       Alert.alert('Error', 'No se pudo conectar al servidor.');
     }
   };
+  
+  
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || dateOfBirth;
