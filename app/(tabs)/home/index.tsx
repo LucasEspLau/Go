@@ -17,7 +17,7 @@ export default function HomeScreen() {
 
   const [loading, setLoading] = useState(true);
 
-  const {setUserLocation,setDestinationLocation}=useLocationStore()
+  const {setUserLocation}=useLocationStore()
   const {setCategoriasEstablecimiento}=useCategoriasEstablecimiento()
   const {setCategoriasProducto}=useCategoriasProducto()
 

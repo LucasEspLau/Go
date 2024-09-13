@@ -4,12 +4,21 @@ import { useEffect, useState } from "react";
 import { useLugar } from "@/store";
 import { Lugar } from "@/util/definitions";
 
+const lugarSample=[
+  {
+    id_lugar: 1,
+    nombre: "Chepen",
+    img: "https://deliverygoperu.com/imagenes/chepen.jpg",
+    estado:1
+  }
+] as Lugar[];
 export default function SelectArea() {
   const router = useRouter(); // Obtén el hook de enrutamiento
   const [lista, setLista] = useState<Lugar[]>([]);
   const { setLugar } = useLugar();
 
   useEffect(() => {
+    /*
     const fetchData = async () => {
       try {
         const response = await fetch('https://api.deliverygoperu.com/lugares.php', {
@@ -26,7 +35,8 @@ export default function SelectArea() {
       }
     };
 
-    fetchData();
+    fetchData();*/
+    setLista(lugarSample)
   }, []);
 
   const handlePress = (lugar: Lugar) => {
