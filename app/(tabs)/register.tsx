@@ -208,6 +208,7 @@ export default function RegisterScreen() {
  // </View>
   //<ScrollView contentContainerStyle={styles.scrollContainer}>
   return (
+    
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
         <Image
