@@ -159,8 +159,6 @@ export function CardProducto({ producto, onPress, onAddCarrito }: { producto: Pr
         <Text className="ml-4 text-gray-700 font-semibold">{producto.nombre_producto}</Text>
         <Text style={{ color: "#F37A20" }} className="ml-4 font-semibold">{producto.precio_producto}</Text>
       </TouchableOpacity>
-
-
       <TouchableOpacity
         style={{
           flexDirection: 'row',
