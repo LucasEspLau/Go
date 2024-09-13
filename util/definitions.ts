@@ -27,6 +27,10 @@ export type Producto ={
     id_lugar: number;
 }
 
+export type DetalleCarrito={
+    producto:Producto;
+    cantidad: number;
+}
 export type CategoriaEstablecimiento ={
     id_categoria_establecimiento: number;
     nombre: string;
@@ -116,4 +120,15 @@ export declare interface EstablecimientosXArea{
     }: {
         listaEstablecimientos: Establecimiento[];
     }) => void;
+}
+
+export declare interface Carrito {
+    listaProductos: DetalleCarrito[] | null;
+
+    setCarrito: ({
+        listaProductos,
+    }: {
+        listaProductos: DetalleCarrito[];
+    }) => void;
+
 }
