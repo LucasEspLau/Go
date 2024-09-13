@@ -10,11 +10,12 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const navigation = useNavigation();
+  
 
   const handleLogin = async () => {
     navigation.navigate('selectArea' as never);
 
-    /*
+    
     if (email && password) {
       try {
         const response = await fetch('https://api.deliverygoperu.com/login.php', {
@@ -48,7 +49,7 @@ export default function LoginScreen() {
       }
     } else {
       Alert.alert('Error', 'Por favor, ingrese su correo electrónico y contraseña.');
-    }*/
+    }
   };
 
   return (
