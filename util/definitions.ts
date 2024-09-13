@@ -13,12 +13,27 @@ export type Establecimiento = {
     area?:number;
 }
 
+export type Producto ={
+    id_producto: number;
+    nombre_producto: string;
+    precio_producto: number;
+    descripcion_producto: string;
+    img_producto: string;
+    id_establecimiento: number;
+    id_promocion: number;
+    categoria: number;
+    estado: number;
+    estado_establecimiento: number;
+    id_lugar: number;
+}
+
 export type CategoriaEstablecimiento ={
     id_categoria_establecimiento: number;
     nombre: string;
     img: string;
     estado: number;
 }
+
 
 export type CategoriaProducto ={
     id_categoria_productos: number;
