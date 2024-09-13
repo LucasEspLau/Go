@@ -54,6 +54,14 @@ export default function LoginScreen() {
         <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={24} color="#FA4A0C" />
+        <Text style={styles.backButtonText}>Regresar</Text>
+      </TouchableOpacity>
         <View style={styles.headerContainer}>
           <Text style={styles.headerText}>INICIAR SESIÓN</Text>
         </View>
@@ -118,7 +126,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 50,
     paddingVertical: '5%',
     overflow: 'hidden',
-    marginBottom: 80, // Espacio entre el fondo y el logo
+    marginBottom: 0, // Espacio entre el fondo y el logo
   },
   headerContainer: {
     width: '100%',
@@ -185,5 +193,16 @@ const styles = StyleSheet.create({
     fontFamily: 'Abel',
     fontSize: 16,
     textDecorationLine: 'underline',
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: "5%",
+    marginHorizontal: "6%",
+  },
+  backButtonText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: "#FA4A0C",
   },
 });
