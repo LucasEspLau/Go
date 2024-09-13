@@ -1,61 +1,50 @@
-import { FlatList, ScrollView, Text, View, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList, Text, TouchableOpacity, SafeAreaView } from "react-native";
 import { useRouter } from "expo-router"; // Hook de Expo Router
 import { useEffect, useState } from "react";
-import { useEstablecimientosXArea, useLocationStore } from "@/store";
-import * as Location from 'expo-location';
-import { establecimientos } from "@/util/data";
-
-const lista = [
-  { id: 1, nombre: "Area A" },
-  { id: 2, nombre: "Area B" },
-  { id: 3, nombre: "Area C" },
-  { id: 4, nombre: "Area D" }
-];
+import { useLugar } from "@/store";
+import { Lugar } from "@/util/definitions";
 
 export default function SelectArea() {
   const router = useRouter(); // Obtén el hook de enrutamiento
-  const { setUserLocation, setDestinationLocation } = useLocationStore();
-  const { setEstablecimientosXArea } = useEstablecimientosXArea();
-  const [hasPermission, setHasPermission] = useState(false);
-
-  const handlePress = (id: number) => {
-    const filterEstablecimiento = establecimientos.filter(
-      (establecimiento) => establecimiento.area === id
-    );
-
-    // Si deseas hacer algo con los establecimientos filtrados, puedes usar un store
-    setEstablecimientosXArea({ listaEstablecimientos: filterEstablecimiento });
-    router.push(`/mapArea?id=${id}`); // Navega a 'mapArea' pasando el id como parámetro
-  };
+  const [lista, setLista] = useState<Lugar[]>([]);
+  const { setLugar } = useLugar();
 
   useEffect(() => {
-    const requestLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setHasPermission(false);
-        return;
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://api.deliverygoperu.com/lugares.php', {
+          method: 'POST',
+          body: JSON.stringify({ token: '2342423423423' }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = await response.json();
+        setLista(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
+    };
 
-      let location = await Location.getCurrentPositionAsync();
-      const address = await Location.reverseGeocodeAsync({
-        latitude: location.coords?.latitude!,
-        longitude: location.coords?.longitude!,
-      });
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        address: `${address[0].name}, ${address[0].region}`,
-      });
-    }
-    requestLocation();
+    fetchData();
   }, []);
 
-  const renderItem = ({ item }: { item: { id: number; nombre: string } }) => (
+  const handlePress = (lugar: Lugar) => {
+    
+    setLugar({
+      id_lugar:lugar.id_lugar??0,
+      nombre:lugar.nombre??'',
+      img:lugar.img??'',
+      estado:lugar.estado??0
+    }); // Asignar el lugar seleccionado
+    router.push(`/(tabs)/home`);
+  };
+
+  const renderItem = ({ item }: { item: Lugar }) => (
     <TouchableOpacity
-      key={item.id}
-      onPress={() => handlePress(item.id)} // Agrega la función de manejo de evento onPress
-      style={{ padding: 10, borderWidth: 1,minHeight:150, borderColor: "gray", flex: 1 }}
+      key={item.id_lugar}
+      onPress={() => handlePress(item)} // Agrega la función de manejo de evento onPress
+      style={{ padding: 10, borderWidth: 1, minHeight: 150, borderColor: "gray", flex: 1 }}
       className="m-2 items-center justify-center rounded-xl"
     >
       <Text>{item.nombre}</Text>
@@ -64,18 +53,18 @@ export default function SelectArea() {
 
   return (
     <SafeAreaView className="flex-1 bg-white p-4">
-        <Text style={{ fontSize: 20, fontWeight: 'bold' }}
-        className="text-center pt-2 pb-2">
-          Seleccione el Área preferencia
-        </Text>
+      <Text style={{ fontSize: 20, fontWeight: 'bold' }} className="text-center pt-2 pb-2">
+        Seleccione el Área de preferencia
+      </Text>
 
       <FlatList
         data={lista}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => (item.id_lugar ? item.id_lugar.toString() : `key-${item.nombre}`)}
         numColumns={2} // Número de columnas
         columnWrapperStyle={{ justifyContent: 'space-between' }} // Espacio entre columnas
       />
+
     </SafeAreaView>
   );
 }

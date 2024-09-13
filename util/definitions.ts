@@ -26,6 +26,23 @@ export type CategoriaProducto ={
     img: string;
     estado: number;
 }
+export declare type Lugar ={
+    id_lugar: number|null;
+    nombre: string|null;
+    img: string|null;
+    estado:number|null;
+    setLugar:({
+        id_lugar,
+        nombre,
+        img,
+        estado,
+    }:{
+        id_lugar:number;
+        nombre: string;
+        img:string;
+        estado: number;
+    })=> void;
+}
 
 export declare interface LocationStore {
     userLatitude: number | null;
