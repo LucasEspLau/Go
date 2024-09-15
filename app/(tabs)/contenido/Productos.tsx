@@ -18,13 +18,13 @@ export default function ScreenProductos() {
     return(<Text>Cargando</Text>)
   }
   const [categoria,setCategoria]=useState<CategoriaProducto>(listaCategoriasProducto[0])
-  const [productos, setProductos] = useState<Producto[]>(productosSample);
+  const [productos, setProductos] = useState<Producto[]>();
 
-/*
+
   useEffect(()=>{
     const fetchData = async () => {
       try {
-        const response = await fetch('https://api.deliverygoperu.com/establecimiento_categoria_lugar.php', {
+        const response = await fetch('https://api.deliverygoperu.com/productos_categorias_lugar.php', {
           method: 'POST',
           body: JSON.stringify(
             { 
@@ -45,7 +45,7 @@ export default function ScreenProductos() {
     };
 
     fetchData();
-  },[categoria])*/
+  },[categoria])
 /*
   // Función para obtener los productos desde la API
   const fetchProductos = async () => {
