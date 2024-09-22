@@ -13,8 +13,7 @@ export default function LoginScreen() {
   
 
   const handleLogin = async () => {
-    
-    //navigation.navigate('selectArea' as never);
+    navigation.navigate('selectArea' as never);
 
     
     if (email && password) {
