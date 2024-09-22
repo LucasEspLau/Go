@@ -13,7 +13,8 @@ export default function LoginScreen() {
   
 
   const handleLogin = async () => {
-    navigation.navigate('selectArea' as never);
+    
+    //navigation.navigate('selectArea' as never);
 
     
     if (email && password) {
@@ -23,10 +24,10 @@ export default function LoginScreen() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            usuario: email,
-            clave: password,
-          }),
+        body: JSON.stringify({
+          usuario: email,
+          clave: password,
+        })
         });
 
         const result = await response.json();
