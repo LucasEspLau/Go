@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Platform, View, Text, TextInput, ImageProps, ImageBackground, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, Platform, View, Text, TextInput, ImageProps, ImageBackground, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -9,19 +9,22 @@ import * as Location from 'expo-location';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { establecimientos } from '@/util/data';
-import { useCategoriasEstablecimiento, useCategoriasProducto, useLocationStore } from '@/store';
-import { CategoriaEstablecimiento, CategoriaProducto } from '@/util/definitions';
+import { useCategoriasEstablecimiento, useCategoriasProducto, useEstablecimientosXProductos, useLocationStore } from '@/store';
+import { CategoriaEstablecimiento, CategoriaProducto, EstablecimientoXProducto } from '@/util/definitions';
 
 
 export default function HomeScreen() {
 
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(true); // Estado para el modal
 
   const {setUserLocation}=useLocationStore()
   const {setCategoriasEstablecimiento}=useCategoriasEstablecimiento()
   const {setCategoriasProducto}=useCategoriasProducto()
+  const {setEstablecimientosXProductos}=useEstablecimientosXProductos()
 
   const [hasPermission, setHasPermission]= useState(false)
+
   
   useEffect(()=>{
     const requestLocation= async()=>{
@@ -78,6 +81,22 @@ export default function HomeScreen() {
         setCategoriasProducto({listaCategoriasProducto})
       } catch (error) {
         console.error('Error fetching data:', error);
+      } 
+      try {
+        const response = await fetch('https://api.deliverygoperu.com/establecimiento_productos.php',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: '2342423423423'
+          })
+        }); // Cambia la URL por la de tu API
+        const result = await response.json();
+        const listaEstablecimientosXProducto = result as EstablecimientoXProducto[]
+        setEstablecimientosXProductos({listaEstablecimientosXProducto})
+      } catch (error) {
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
@@ -100,35 +119,54 @@ export default function HomeScreen() {
       </View>
       <View className='flex flex-col mb-4 border border-1'>
         <Text className='ml-4 text-[2vh] font-moon' style={{fontWeight:'100'}}>Categorías</Text>
-        <View className='flex flex-row border border-1 justify-center'>
-          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading}/>        
+        <View className='flex flex-row border border-1 justify-around'>
+          <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading} />        
           <IconCat img={require('@/assets/images/logo.png')} name='Productos' disabled={loading}/>     
         </View>
       </View>
       <IconPromo/>
-          
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)} 
+      >
+        <View className='flex-1 justify-center items-center bg-black bg-opacity-50'>
+          <View className='bg-white rounded-lg p-4'>
+            <IconPromo />
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10 }}>
+              <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <StatusBar style="auto" />
     </SafeAreaView>
   );
 }
 
-
-export function IconCat({img,name,disabled}:{img:ImageProps,name:string,disabled:boolean}){
-
+export function IconCat({ img, name, disabled }: { img: ImageProps; name: string; disabled: boolean }) {
   return (
-    <TouchableOpacity disabled={disabled}>
-      <View className='flex flex-col border border-1 justify-center items-center m-2 max-w-[15vh]'>
-        <Image className='w-[10vh] h-[10vh] border border-1' source={img} />
-        <Link href={`/contenido/${name}`as any} >
-          <Text>{name}</Text>
-        </Link>
-        
+    <View className='border border-1 '>
+      <Link
+            href={`/contenido/${name}` as any}
+            disabled={disabled}
+            style={{display:'flex',justifyContent:'center',alignItems:'center'}}
+            className='border border-1 rounded-lg'
+          >
+        <View className='border border-1 w-full flex justify-center items-center'>
+          <Image className='border border-2 w-[10vh] h-[10vh] p-4' source={img} />
 
-      </View>
-    </TouchableOpacity>
+          <Text className='mt-2 text-center'>{name}</Text>
+        </View>
+
+
+      </Link>
+    </View>
 
   );
 }
+
 export function IconPromo() {
   return (
     <View className='p-4 h-[50vh] border border-1 rounded-lg flex justify-center items-center'>

@@ -10,7 +10,7 @@ export type Establecimiento = {
     categoria: number;
     latitud:number;
     longitud:number;
-    area?:number;
+    lugar:number;
 }
 
 export type Producto ={
@@ -25,6 +25,22 @@ export type Producto ={
     estado: number;
     estado_establecimiento: number;
     id_lugar: number;
+}
+
+export type EstablecimientoXProducto={
+    id_establecimiento: number;
+    nombre_establecimiento: string;
+    logo_establecimiento: string;
+    descripcion_establecimiento: string;
+    horario_inicio: string;
+    horario_fin: string;
+    tiempo_preparacion: number;
+    estado: number;
+    categoria: number;
+    latitud:number;
+    longitud:number;
+    lugar:number;
+    productos: Producto[];
 }
 
 export type DetalleCarrito={
@@ -119,6 +135,14 @@ export declare interface EstablecimientosXArea{
         listaEstablecimientos,
     }: {
         listaEstablecimientos: Establecimiento[];
+    }) => void;
+}
+export declare interface EstablecimientosXProductos{
+    listaEstablecimientosXProducto: EstablecimientoXProducto[]|null;
+    setEstablecimientosXProductos: ({
+        listaEstablecimientosXProducto,
+    }: {
+        listaEstablecimientosXProducto: EstablecimientoXProducto[];
     }) => void;
 }
 
