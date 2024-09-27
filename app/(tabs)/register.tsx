@@ -455,10 +455,11 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   registerButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: 'rgba(255, 127, 66, 1)',
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
+    marginBottom: 60,
   },
   registerButtonText: {
     color: "#fff",

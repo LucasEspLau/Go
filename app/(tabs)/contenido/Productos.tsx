@@ -72,6 +72,7 @@ export default function ScreenProductos() {
 
     router.push(`/(tabs)/contenido/producto/${item.id_producto}`); // Asegúrate de que el tipo es compatible
   };
+  
 
   const handleAddCarrito = (item: Producto) => {
     const productosEnCarrito = listaProductos ?? [];

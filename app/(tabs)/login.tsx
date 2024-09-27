@@ -51,37 +51,39 @@ export default function LoginScreen() {
       Alert.alert('Error', 'Por favor, ingrese su correo electrónico y contraseña.');
     }
   };
-
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
         <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="arrow-back" size={24} color="#FA4A0C" />
+          <Text style={styles.backButtonText}>Regresar</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <MaterialIcons name="arrow-back" size={24} color="#FA4A0C" />
-        <Text style={styles.backButtonText}>Regresar</Text>
-      </TouchableOpacity>
         <View style={styles.headerContainer}>
           <Text style={styles.headerText}>INICIAR SESIÓN</Text>
         </View>
 
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Correo Electrónico"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            placeholderTextColor="#888"
-          />
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.input}
+              placeholder="Correo Electrónico"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              placeholderTextColor="#888"
+            />
+          </View>
+
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
               placeholder="Contraseña"
               value={password}
               onChangeText={setPassword}
@@ -92,10 +94,10 @@ export default function LoginScreen() {
               style={styles.eyeIcon}
               onPress={() => setShowPassword(!showPassword)}
             >
-              <MaterialIcons 
-                name={showPassword ? 'visibility-off' : 'visibility'} 
-                size={24} 
-                color="#888" 
+              <MaterialIcons
+                name={showPassword ? 'visibility-off' : 'visibility'}
+                size={24}
+                color="#888"
               />
             </TouchableOpacity>
           </View>
@@ -130,7 +132,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 50,
     paddingVertical: '5%',
     overflow: 'hidden',
-    marginBottom: 0, // Espacio entre el fondo y el logo
   },
   headerContainer: {
     width: '100%',
@@ -149,35 +150,47 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   formContainer: {
-    flex: 1,
+    borderRadius: 8,
+    marginVertical: '2%',
+    alignItems: 'center',
     width: '100%',
     paddingHorizontal: '6%',
     paddingVertical: '8%',
-    alignItems: 'center',
     backgroundColor: 'transparent',
   },
   input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
     width: '100%',
-    padding: '3%',
-    marginVertical: '2%',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
+    fontSize: 16,
   },
   passwordContainer: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
+    marginVertical: '2%',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    width: '100%',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
     backgroundColor: '#fff',
-    marginVertical: '2%',
+    fontSize: 16,
   },
   eyeIcon: {
     position: 'absolute',
-    right: 10,
+    right: 10, // Position the icon to the right inside the input
+    top: '50%', // Center the icon vertically
+    transform: [{ translateY: -12 }], // Adjust vertical position for better alignment
   },
   button: {
     width: '100%',
