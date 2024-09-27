@@ -254,28 +254,26 @@ export default function RegisterScreen() {
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-        {/* Campo de Contraseña */}
         <View style={styles.passwordContainer}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Contraseña"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setPasswordError("");
-            }}
-            secureTextEntry={!showPassword}
-            placeholderTextColor="#888"
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons
-              name={showPassword ? "eye-off" : "eye"}
-              size={24}
-              color="gray"
-              style={styles.eyeIcon}
-            />
-          </TouchableOpacity>
-        </View>
+      <TextInput
+        style={styles.passwordInput}
+        placeholder="Contraseña"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry={!showPassword}
+        placeholderTextColor="#888"
+      />
+      <TouchableOpacity
+        style={styles.eyeIcon}
+        onPress={() => setShowPassword(!showPassword)}
+      >
+        <MaterialIcons
+          name={showPassword ? 'visibility-off' : 'visibility'}
+          size={24}
+          color="#888"
+        />
+      </TouchableOpacity>
+    </View>
         {passwordError ? (
           <Text style={styles.errorText}>{passwordError}</Text>
         ) : null}
@@ -365,6 +363,14 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+  passwordInput: {
+    borderColor: "#ccc",
+    
+    flex: 1,
+    height: '100%', // Asegura que el campo ocupe toda la altura
+    paddingLeft: 10, // Espacio a la izquierda del texto
+    paddingRight: 40, // Espacio a la derecha para el ícono
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -395,10 +401,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   formContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   input: {
     borderColor: "#ccc",
+    
+    flex: 1,
+    height: '100%', // Asegura que el campo ocupe toda la altura
+    paddingLeft: 10, // Espacio a la izquierda del texto
+    paddingRight: 40, // Espacio a la derecha para el ícono
     borderWidth: 1,
     padding: 12,
     marginBottom: 16,
