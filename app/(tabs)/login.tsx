@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions, Image, ScrollView } from 'react-native';
 import { useNavigation } from 'expo-router';
@@ -10,12 +11,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
   const navigation = useNavigation();
-  
 
   const handleLogin = async () => {
-    navigation.navigate('selectArea' as never);
-
-    
     if (email && password) {
       try {
         const response = await fetch('https://api.deliverygoperu.com/login.php', {
@@ -23,10 +20,10 @@ export default function LoginScreen() {
           headers: {
             'Content-Type': 'application/json',
           },
-        body: JSON.stringify({
-          usuario: email,
-          clave: password,
-        })
+          body: JSON.stringify({
+            usuario: email,
+            clave: password,
+          }),
         });
 
         const result = await response.json();
@@ -37,6 +34,8 @@ export default function LoginScreen() {
           if (result.status === 'success') {
             Alert.alert('Inicio de sesión exitoso', '¡Bienvenido de nuevo!');
             navigation.navigate('selectArea' as never);
+          } else if (result.status === 'not_registered') {
+            Alert.alert('Error', 'Usuario no registrado. Por favor, regístrate.');
           } else {
             Alert.alert('Error', result.mensaje || 'Error al iniciar sesión.');
           }
@@ -51,6 +50,7 @@ export default function LoginScreen() {
       Alert.alert('Error', 'Por favor, ingrese su correo electrónico y contraseña.');
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.headerWrapper}>

@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons"; // Para el ícono de mostrar/ocultar contraseña
+import { MaterialIcons } from "@expo/vector-icons"; // Para el ícono de mostrar/ocultar contraseña
 
 const { width, height } = Dimensions.get("window");
 
@@ -149,32 +149,17 @@ export default function RegisterScreen() {
         const result = await response.json();
         console.log("Respuesta de la API:", result);
 
-        if (response.ok) {
-          const message = result.mensaje || "";
-          const codeMatch = message.match(/codigo\s*=\s*(\d+)/);
-          if (codeMatch) {
-            const code = codeMatch[1];
-            Alert.alert(
-              "Código de Verificación",
-              `El código de verificación es: ${code}`
-            );
-          }
-
-          const verificationResponse = await fetch(
-            "https://api.deliverygoperu.com/enviar_codigo_sms.php",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+        if (response.ok && result.status === 'success') {
+          Alert.alert(
+            "Registro Exitoso",
+            "Tu cuenta ha sido creada exitosamente. Ahora puedes iniciar sesión.",
+            [
+              {
+                text: "OK",
+                onPress: () => navigation.navigate("login" as never),
               },
-              body: JSON.stringify({ telf: phone }),
-            }
+            ]
           );
-
-          if (verificationResponse.ok) {
-            console.log("Navegando a la pantalla de verificación");
-            navigation.navigate("verification" as never);
-          }
         } else {
           Alert.alert(
             "Error",
@@ -203,12 +188,7 @@ export default function RegisterScreen() {
     }
   };
 
-  //<View style={styles.headerWrapper}>
- // <Image source={require('../../assets/images/logo.png')} style={styles.logo} />
- // </View>
-  //<ScrollView contentContainerStyle={styles.scrollContainer}>
   return (
-    
     <View style={styles.container}>
       <View style={styles.headerWrapper}>
         <Image
@@ -255,25 +235,25 @@ export default function RegisterScreen() {
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
         <View style={styles.passwordContainer}>
-      <TextInput
-        style={styles.passwordInput}
-        placeholder="Contraseña"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={!showPassword}
-        placeholderTextColor="#888"
-      />
-      <TouchableOpacity
-        style={styles.eyeIcon}
-        onPress={() => setShowPassword(!showPassword)}
-      >
-        <MaterialIcons
-          name={showPassword ? 'visibility-off' : 'visibility'}
-          size={24}
-          color="#888"
-        />
-      </TouchableOpacity>
-    </View>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Contraseña"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholderTextColor="#888"
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <MaterialIcons
+              name={showPassword ? 'visibility-off' : 'visibility'}
+              size={24}
+              color="#888"
+            />
+          </TouchableOpacity>
+        </View>
         {passwordError ? (
           <Text style={styles.errorText}>{passwordError}</Text>
         ) : null}
@@ -296,6 +276,7 @@ export default function RegisterScreen() {
             mode="date"
             display="default"
             onChange={handleDateChange}
+            maximumDate={new Date()}
           />
         )}
         <TextInput
@@ -307,6 +288,8 @@ export default function RegisterScreen() {
             setDniError("");
           }}
           placeholderTextColor="#888"
+          keyboardType="numeric"
+          maxLength={8}
         />
         {dniError ? <Text style={styles.errorText}>{dniError}</Text> : null}
         <TextInput
@@ -319,6 +302,7 @@ export default function RegisterScreen() {
           }}
           keyboardType="phone-pad"
           placeholderTextColor="#888"
+          maxLength={9}
         />
         {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
         <View style={styles.genderContainer}>
@@ -361,6 +345,7 @@ export default function RegisterScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   passwordInput: {
