@@ -8,8 +8,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { establecimientos } from '@/util/data';
-import { useCategoriasEstablecimiento, useCategoriasProducto, useEstablecimientosXProductos, useLocationStore } from '@/store';
+import { establecimientos, productosSample } from '@/util/data';
+import { useCategoriasEstablecimiento, useCategoriasProducto, useEstablecimientosXProductos, useLocationStore, useLugar } from '@/store';
 import { CategoriaEstablecimiento, CategoriaProducto, EstablecimientoXProducto } from '@/util/definitions';
 
 
@@ -17,11 +17,12 @@ export default function HomeScreen() {
 
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(true); // Estado para el modal
-
+  const [anuncio,setAnuncio] = useState();
   const {setUserLocation}=useLocationStore()
   const {setCategoriasEstablecimiento}=useCategoriasEstablecimiento()
   const {setCategoriasProducto}=useCategoriasProducto()
   const {setEstablecimientosXProductos}=useEstablecimientosXProductos()
+  const { id_lugar } = useLugar();
 
   const [hasPermission, setHasPermission]= useState(false)
 
@@ -89,12 +90,28 @@ export default function HomeScreen() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            token: '2342423423423'
+            token: '2342423423423',
+            id_lugar: id_lugar
           })
         }); // Cambia la URL por la de tu API
         const result = await response.json();
         const listaEstablecimientosXProducto = result as EstablecimientoXProducto[]
         setEstablecimientosXProductos({listaEstablecimientosXProducto})
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+      try {
+        const response = await fetch('https://api.deliverygoperu.com/anuncios.php',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            token: '2342423423423'
+          })
+        }); // Cambia la URL por la de tu API
+        const result = await response.json();
+        setAnuncio(result)
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -117,23 +134,23 @@ export default function HomeScreen() {
           style={{ backgroundColor: "#E7E8EA" }}
         />
       </View>
-      <View className='flex flex-col mb-4 border border-1'>
+      <View className='flex flex-col border border-1'>
         <Text className='ml-4 text-[2vh] font-moon' style={{fontWeight:'100'}}>Categorías</Text>
         <View className='flex flex-row border border-1 justify-around'>
           <IconCat img={require('@/assets/images/logo.png')} name='Establecimientos' disabled={loading} />        
           <IconCat img={require('@/assets/images/logo.png')} name='Productos' disabled={loading}/>     
         </View>
       </View>
-      <IconPromo/>
+      <IconPromo anuncio={anuncio}/>
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)} 
       >
-        <View className='flex-1 justify-center items-center bg-black bg-opacity-50'>
+        <View className='flex-1 justify-center items-center'>
           <View className='bg-white rounded-lg p-4'>
-            <IconPromo />
+            <IconPromo anuncio={anuncio}/>
             <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 10 }}>
               <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>Cerrar</Text>
             </TouchableOpacity>
@@ -167,24 +184,25 @@ export function IconCat({ img, name, disabled }: { img: ImageProps; name: string
   );
 }
 
-export function IconPromo() {
+export function IconPromo({anuncio}:{anuncio:any}) {
+  const productoAnuncio=productosSample[0]
   return (
-    <View className='p-4 h-[50vh] border border-1 rounded-lg flex justify-center items-center'>
+    <View className='p-4 h-[50vh]  rounded-lg flex justify-center items-center'>
       <ImageBackground
         className='w-[40vh] h-[40vh] border border-1 rounded-lg flex flex-col justify-between'
-        source={require('@/assets/images/logo.png')}
+        source={{uri:productoAnuncio.img_producto}}
         resizeMode="cover"
       >
         
         <Text className="mt-4 ml-4 text-white font-bold bg-black w-[20vh] rounded-full p-2">
           PROMOCIÓN DEL DÍA
         </Text>
-        <View className='m-4'>
-          <Text className='mt-2 mb-2 text-white font-moon'>
-            NOMBRE DE LA PROMO
+        <View className='mr-2 ml-2 bg-white'>
+          <Text className='mt-2 mb-2 text-black font-moon'>
+            {productoAnuncio.nombre_producto}
           </Text>
-          <Text className='text-white'>
-            NOMBRE DE LA PROMO
+          <Text className='text-black font-moon'>
+            PRECIO: S/.{productoAnuncio.precio_producto}
           </Text>
         </View>
 

@@ -13,7 +13,7 @@ export const establecimientos: Establecimiento[] = [
         categoria: 1,
         latitud: -12.099392,
         longitud: -76.873412,
-        area:1
+        lugar:1
     },
     {
         id_establecimiento: 2,
@@ -27,7 +27,7 @@ export const establecimientos: Establecimiento[] = [
         categoria: 1,
         latitud: -12.100787,
         longitud: -76.876568,
-        area:2
+        lugar:2
     },
     {
         id_establecimiento: 3,
@@ -41,7 +41,7 @@ export const establecimientos: Establecimiento[] = [
         categoria: 1,
         latitud: -12.102063,
         longitud: -76.867305,
-        area:3
+        lugar:3
     },
     {
         id_establecimiento: 4,
@@ -55,7 +55,7 @@ export const establecimientos: Establecimiento[] = [
         categoria: 1,
         latitud: -12.104252,
         longitud: -76.871306,
-        area:4
+        lugar:4
     }
 ];
 

@@ -1,10 +1,10 @@
-import { useCarrito, useCategoriasProducto, useLugar } from '@/store';
+import { useCarrito, useCategoriasProducto, useEstablecimientosXProductos, useLugar } from '@/store';
 import { productosSample } from '@/util/data';
-import { CategoriaProducto, DetalleCarrito, Producto } from '@/util/definitions';
+import { CategoriaProducto, DetalleCarrito, EstablecimientoXProducto, Producto } from '@/util/definitions';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FontAwesome5, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
-import { Image, SafeAreaView, Text, View, FlatList, Button, TouchableOpacity, ScrollView } from 'react-native';
+import { Image, SafeAreaView, Text, View, FlatList, Button, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export default function ScreenProductos() {
@@ -12,15 +12,54 @@ export default function ScreenProductos() {
 
   const {listaCategoriasProducto} =useCategoriasProducto()
   const { listaProductos, setCarrito } = useCarrito();
+  const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
 
   const {id_lugar} =useLugar();
   if (!listaCategoriasProducto){
     return(<Text>Cargando</Text>)
   }
+  
+  if (!listaEstablecimientosXProducto) {
+    return <Text>Cargando</Text>;
+  }
   const [categoria,setCategoria]=useState<CategoriaProducto>(listaCategoriasProducto[0])
   const [productos, setProductos] = useState<Producto[]>();
+  const [productoAReemplazar, setProductoAReemplazar] = useState<Producto | null>(null);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
+  useEffect(() => {
+    if (mostrarConfirmacion) {
+      Alert.alert(
+        "Confirmar",
+        "¿Deseas reemplazar el carrito con productos de este nuevo establecimiento?",
+        [
+          {
+            text: "Cancelar",
+            onPress: () => setMostrarConfirmacion(false),
+            style: "cancel"
+          },
+          {
+            text: "Reemplazar",
+            onPress: () => {
+              const nuevoDetalle: DetalleCarrito = {
+                producto: productoAReemplazar!,
+                cantidad: 1,
+              };
 
+              setCarrito({ listaProductos: [nuevoDetalle] });
+              Toast.show({
+                type: 'success',
+                text1: 'Carrito',
+                text2: 'Carrito reemplazado y producto añadido',
+                position: 'bottom',
+              });
+              setMostrarConfirmacion(false);
+            }
+          }
+        ]
+      );
+    }
+  }, [mostrarConfirmacion]);
   useEffect(()=>{
     const fetchData = async () => {
       try {
@@ -38,7 +77,11 @@ export default function ScreenProductos() {
           },
         });
         const data = await response.json();
-        setProductos(data)
+        if (data[0].status === "error") {
+          setProductos([]);
+        } else {
+          setProductos(data); // Asumiendo que el resto de los datos son los productos
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -70,12 +113,29 @@ export default function ScreenProductos() {
   const handlePress = (item:Producto) => {
 
 
-    router.push(`/(tabs)/contenido/producto/${item.id_producto}`); // Asegúrate de que el tipo es compatible
+    router.push(`/(tabs)/contenido/producto/${item.id_producto+"-"+item.id_establecimiento}`); // Asegúrate de que el tipo es compatible
   };
   
-
   const handleAddCarrito = (item: Producto) => {
     const productosEnCarrito = listaProductos ?? [];
+
+    if (productosEnCarrito.length > 0) {
+      const idEstablecimientoEnCarrito = productosEnCarrito[0].producto.id_establecimiento;
+
+      if (idEstablecimientoEnCarrito !== item.id_establecimiento) {
+        Toast.show({
+          type: 'error',
+          text1: 'Carrito',
+          text2: 'El producto no corresponde al establecimiento actual. ¿Deseas reemplazar el carrito?',
+          position: 'bottom',
+        });
+
+        setProductoAReemplazar(item);
+        setMostrarConfirmacion(true);
+        return;
+      }
+    }
+
     const yaEnCarrito = productosEnCarrito.some(
       (detalle) => detalle.producto.id_producto === item.id_producto
     );
@@ -87,7 +147,6 @@ export default function ScreenProductos() {
         text2: 'Ya está añadido al carrito',
         position: 'bottom',
       });
-      console.log('Ya está añadido al carrito')
     } else {
       const nuevoDetalle: DetalleCarrito = {
         producto: item,
@@ -104,13 +163,12 @@ export default function ScreenProductos() {
         text2: 'Producto añadido al carrito',
         position: 'bottom',
       });
-      console.log('Producto añadido al carrito')
-
     }
   };
 
+
   const renderItem = ({ item }:{item:Producto}) => (
-    <CardProducto producto={item} onPress={() => handlePress(item)} onAddCarrito={() => handleAddCarrito(item)}/>
+    <CardProducto producto={item} onPress={() => handlePress(item)} onAddCarrito={() => handleAddCarrito(item)} listaEstablecimientos={listaEstablecimientosXProducto}/>
   );
   const renderCategoryItem = ({ item }: { item: CategoriaProducto}) => (
     <TouchableOpacity
@@ -137,28 +195,49 @@ export default function ScreenProductos() {
             contentContainerStyle={{ paddingVertical: 10 }}
           />
       </ScrollView>
-      <FlatList
-        data={productos}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id_producto+""}
-        numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }} // Espacio entre columnas
-        contentContainerStyle={{ paddingHorizontal: 8 }} // Padding horizontal
-      />
+      {
+        productos && productos.length > 0 ? (
+          <FlatList
+            data={productos}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id_producto.toString()}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }} // Espacio entre columnas
+            contentContainerStyle={{ paddingHorizontal: 8 }} // Padding horizontal
+          />
+        ) : (
+          <Text className="text-center mt-4">No hay productos disponibles.</Text>
+        )
+      }
+
+
     </SafeAreaView>
   );
 }
 
-export function CardProducto({ producto, onPress, onAddCarrito }: { producto: Producto; onPress: () => void; onAddCarrito: () => void }) {
+export function CardProducto({ producto, onPress, onAddCarrito,listaEstablecimientos }: { producto: Producto; onPress: () => void; onAddCarrito: () => void;listaEstablecimientos:EstablecimientoXProducto[] }) {
+  
+  const estableProd: EstablecimientoXProducto = listaEstablecimientos.find(
+    (estable) => estable.id_establecimiento.toString() === producto.id_establecimiento.toString()
+  )!;
+
   return (
     <View className="flex-1 p-2">
-      <TouchableOpacity onPress={onPress} className="flex-1 p-2">
+      <TouchableOpacity onPress={onPress} className="flex-1 p-2 justify-around">
         <Image
           className="w-full h-[20vh] rounded-lg border border-gray-300"
           source={require('@/assets/images/logo.png')}
         />
-        <Text className="ml-4 text-gray-700 font-semibold">{producto.nombre_producto}</Text>
-        <Text style={{ color: "#F37A20" }} className="ml-4 font-semibold">{producto.precio_producto}</Text>
+        <Text className="text-gray-700 font-semibold" style={{fontSize:18}}>{producto.nombre_producto}</Text>
+        <Text style={{ color: "#F37A20",fontSize:18 }} className="font-semibold">S/. {producto.precio_producto}</Text>
+        <View className='flex flex-row mt-2 mb-2 items-center justify-left'>
+          <Image
+            className="w-[4vh] h-[4vh] rounded-lg border border-gray-300"
+            source={{uri:estableProd.logo_establecimiento}}
+          />
+          <Text className="text-gray-700 font-semibold ml-2" style={{ fontSize: 16, }} >{estableProd.nombre_establecimiento}</Text>
+        </View>
+
       </TouchableOpacity>
       <TouchableOpacity
         style={{
