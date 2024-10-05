@@ -110,6 +110,7 @@ export default function ScreenProductos() {
   const handlePressCategoria = (item:CategoriaProducto) =>{
     setCategoria(item);
   }
+  
   const handlePress = (item:Producto) => {
 
 
@@ -183,30 +184,38 @@ export default function ScreenProductos() {
       <Text>{item.nombre}</Text>
     </TouchableOpacity>
   );
+  
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <TouchableOpacity
+        onPress={() => router.back()} // Botón para regresar a la página anterior
+        className="p-4"
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+
       <ScrollView className='border-2 border-black min-h-[150px] max-h-[150px]'>
         <FlatList
-            data={listaCategoriasProducto}
-            renderItem={renderCategoryItem}
-            keyExtractor={(item) => item.id_categoria_productos.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 10 }}
-          />
+          data={listaCategoriasProducto}
+          renderItem={renderCategoryItem}
+          keyExtractor={(item) => item.id_categoria_productos.toString()}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 10 }}
+        />
       </ScrollView>
       {
         productos && productos.length > 0 ? (
-          <FlatList
-            data={productos}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id_producto.toString()}
-            numColumns={2}
+        <FlatList
+          data={productos}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id_producto.toString()}
+          numColumns={2}
             columnWrapperStyle={{ justifyContent: 'space-between' }} // Espacio entre columnas
             contentContainerStyle={{ paddingHorizontal: 8 }} // Padding horizontal
-          />
-        ) : (
-          <Text className="text-center mt-4">No hay productos disponibles.</Text>
+        />
+      ) : (
+        <Text className="text-center mt-4">No hay productos disponibles.</Text>
         )
       }
 
@@ -239,6 +248,7 @@ export function CardProducto({ producto, onPress, onAddCarrito,listaEstablecimie
         </View>
 
       </TouchableOpacity>
+      
       <TouchableOpacity
         style={{
           flexDirection: 'row',
