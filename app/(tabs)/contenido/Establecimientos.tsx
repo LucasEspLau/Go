@@ -1,5 +1,6 @@
 import { useCategoriasEstablecimiento, useLugar } from '@/store';
 import { CategoriaEstablecimiento, Establecimiento } from '@/util/definitions';
+import { Ionicons } from '@expo/vector-icons';
 import { router, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, SafeAreaView, Text, View, FlatList, TouchableOpacity, ScrollView } from 'react-native';
@@ -71,7 +72,14 @@ export default function ScreenEstablecimientos() {
     item.horario_inicio && item.horario_fin && item.nombre_establecimiento && item.descripcion_establecimiento
   );
   return (
+    
     <SafeAreaView className="flex-1 bg-white">
+      <TouchableOpacity
+        onPress={() => router.back()} // Botón para regresar a la página anterior
+        className="p-4"
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
       <ScrollView className='border-2 border-black min-h-[150px] max-h-[150px]'>
         <FlatList
           data={listaCategoriasEstablecimiento}
