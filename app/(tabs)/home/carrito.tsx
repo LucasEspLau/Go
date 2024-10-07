@@ -1,7 +1,7 @@
 import { useCarrito } from "@/store";
 import { DetalleCarrito } from "@/util/definitions";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message';
@@ -63,7 +63,14 @@ export default function Carrito() {
   };
 
   return (
+    
     <SafeAreaView className="flex-1 bg-white">
+      <TouchableOpacity
+        onPress={() => router.back()} // Botón para regresar a la página anterior
+        className="p-4"
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
         <View className="flex flex-row justify-center items-center">
             <Text className='font-moon mt-4 mb-4 text-xl'>Carrito</Text>
 

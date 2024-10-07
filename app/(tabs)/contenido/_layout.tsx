@@ -20,8 +20,10 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="Productos"/>
         <Stack.Screen name="Establecimientos"/>
+        <Stack.Screen name="Search"/>
         <Stack.Screen name="establecimiento" options={{ headerShown: false }} />
         <Stack.Screen name="producto" options={{ headerShown: false }} />
+        
       </Stack>
       <Toast />
 
