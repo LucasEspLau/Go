@@ -46,6 +46,7 @@ export type EstablecimientoXProducto={
 export type DetalleCarrito={
     producto:Producto;
     cantidad: number;
+    comentario: string;
 }
 export type CategoriaEstablecimiento ={
     id_categoria_establecimiento: number;
@@ -61,6 +62,16 @@ export type CategoriaProducto ={
     img: string;
     estado: number;
 }
+
+export declare type Promocion ={
+    listaPromociones: Producto[]|null;
+    setPromocion: ({
+        listaPromociones,
+    }:{
+        listaPromociones: Producto[];
+    })=> void;
+}
+
 export declare type Lugar ={
     id_lugar: number|null;
     nombre: string|null;

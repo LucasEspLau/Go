@@ -1,4 +1,4 @@
-import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, LocationStore, Lugar, Producto } from "@/util/definitions";
+import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, LocationStore, Lugar, Producto, Promocion } from "@/util/definitions";
 import { create } from "zustand";
 
 export const useLocationStore = create<LocationStore>((set) => ({
@@ -94,7 +94,18 @@ export const useEstablecimientosXProductos = create<EstablecimientosXProductos>(
     }
 }))
 
-
+export const usePromocion=create<Promocion>((set)=>({
+    listaPromociones: null,
+    setPromocion:({
+        listaPromociones
+    }:{
+        listaPromociones: Producto[]
+    })=>{
+        set(()=>({
+            listaPromociones: listaPromociones,
+        }));
+    }
+}))
 
 export const useLugar=create<Lugar>((set)=>({
     id_lugar: null,

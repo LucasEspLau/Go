@@ -4,10 +4,16 @@ import { CategoriaProducto, DetalleCarrito, EstablecimientoXProducto, Producto }
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FontAwesome5, Ionicons, SimpleLineIcons } from "@expo/vector-icons";
-import { Image, SafeAreaView, Text, View, FlatList, Button, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { Image, SafeAreaView, Text, View, FlatList, Button, TouchableOpacity, ScrollView, Alert, Modal, TextInput } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export default function ScreenProductos() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
+  const [cantidad, setCantidad] = useState<number>(1);
+  const [comentario, setComentario] = useState<string>('');
+
+
   const router = useRouter(); // Obtén el hook de enrutamiento
 
   const {listaCategoriasProducto} =useCategoriasProducto()
@@ -24,6 +30,8 @@ export default function ScreenProductos() {
   }
   const [categoria,setCategoria]=useState<CategoriaProducto>(listaCategoriasProducto[0])
   const [productos, setProductos] = useState<Producto[]>();
+
+  /*
   const [productoAReemplazar, setProductoAReemplazar] = useState<Producto | null>(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
@@ -60,6 +68,8 @@ export default function ScreenProductos() {
       );
     }
   }, [mostrarConfirmacion]);
+
+  */
   useEffect(()=>{
     const fetchData = async () => {
       try {
@@ -117,59 +127,97 @@ export default function ScreenProductos() {
     router.push(`/(tabs)/contenido/producto/${item.id_producto+"-"+item.id_establecimiento}`); // Asegúrate de que el tipo es compatible
   };
   
-  const handleAddCarrito = (item: Producto) => {
-    const productosEnCarrito = listaProductos ?? [];
+  const handleAddCarrito = () => {
+    if (selectedProducto) {
+      const productosEnCarrito = listaProductos ?? [];
 
-    if (productosEnCarrito.length > 0) {
-      const idEstablecimientoEnCarrito = productosEnCarrito[0].producto.id_establecimiento;
+      // Verificamos si ya hay productos en el carrito de otro establecimiento
+      // Verificamos si ya hay productos en el carrito de otro establecimiento
+      if (productosEnCarrito.length > 0 && productosEnCarrito[0].producto.id_establecimiento !== selectedProducto.id_establecimiento) {
+        // Preguntar al usuario si desea reemplazar el carrito
+        Alert.alert(
+          "Reemplazar Carrito",
+          "El producto seleccionado pertenece a un establecimiento diferente. ¿Deseas reemplazar el carrito actual?",
+          [
+            {
+              text: "Cancelar",
+              onPress: () => {},
+              style: "cancel"
+            },
+            {
+              text: "Reemplazar",
+              onPress: () => {
+                const nuevoDetalle: DetalleCarrito = {
+                  producto: selectedProducto,
+                  cantidad: cantidad,
+                  comentario: comentario,
+                };
 
-      if (idEstablecimientoEnCarrito !== item.id_establecimiento) {
-        Toast.show({
-          type: 'error',
-          text1: 'Carrito',
-          text2: 'El producto no corresponde al establecimiento actual. ¿Deseas reemplazar el carrito?',
-          position: 'bottom',
-        });
+                // Reemplazar el carrito
+                setCarrito({
+                  listaProductos: [nuevoDetalle],
+                });
 
-        setProductoAReemplazar(item);
-        setMostrarConfirmacion(true);
+                Toast.show({
+                  type: 'success',
+                  text1: 'Carrito',
+                  text2: 'Carrito reemplazado y producto añadido',
+                  position: 'bottom',
+                });
+                setModalVisible(false);
+                setCantidad(1);
+                setComentario('');
+              }
+            }
+          ]
+        );
         return;
       }
+
+      // Si ya está en el carrito, mostramos una alerta
+      const yaEnCarrito = productosEnCarrito.some(
+        (detalle) => detalle.producto.id_producto === selectedProducto.id_producto
+      );
+
+      if (yaEnCarrito) {
+        Toast.show({
+          type: 'info',
+          text1: 'Carrito',
+          text2: 'El producto ya está en el carrito.',
+          position: 'bottom',
+        });
+      } else {
+        const nuevoDetalle: DetalleCarrito = {
+          producto: selectedProducto,
+          cantidad: cantidad,
+          comentario: comentario,
+        };
+
+        setCarrito({
+          listaProductos: [...productosEnCarrito, nuevoDetalle],
+        });
+
+        Toast.show({
+          type: 'success',
+          text1: 'Carrito',
+          text2: 'Producto añadido al carrito',
+          position: 'bottom',
+        });
+      }
+
+      setModalVisible(false);
+      setCantidad(1);
+      setComentario('');
     }
-
-    const yaEnCarrito = productosEnCarrito.some(
-      (detalle) => detalle.producto.id_producto === item.id_producto
-    );
-
-    if (yaEnCarrito) {
-      Toast.show({
-        type: 'info',
-        text1: 'Carrito',
-        text2: 'Ya está añadido al carrito',
-        position: 'bottom',
-      });
-    } else {
-      const nuevoDetalle: DetalleCarrito = {
-        producto: item,
-        cantidad: 1,
-      };
-
-      setCarrito({
-        listaProductos: [...productosEnCarrito, nuevoDetalle],
-      });
-
-      Toast.show({
-        type: 'success',
-        text1: 'Carrito',
-        text2: 'Producto añadido al carrito',
-        position: 'bottom',
-      });
-    }
+  };
+  const openModal = (producto: Producto) => {
+    setSelectedProducto(producto);
+    setModalVisible(true);
   };
 
 
   const renderItem = ({ item }:{item:Producto}) => (
-    <CardProducto producto={item} onPress={() => handlePress(item)} onAddCarrito={() => handleAddCarrito(item)} listaEstablecimientos={listaEstablecimientosXProducto}/>
+    <CardProducto producto={item} onPress={() => handlePress(item)} onAddCarrito={() => openModal(item)} listaEstablecimientos={listaEstablecimientosXProducto}/>
   );
   const renderCategoryItem = ({ item }: { item: CategoriaProducto}) => (
     <TouchableOpacity
@@ -189,7 +237,7 @@ export default function ScreenProductos() {
     <SafeAreaView className="flex-1 bg-white">
       <TouchableOpacity
         onPress={() => router.back()} // Botón para regresar a la página anterior
-        className="p-4"
+        className="p-4 mt-4"
       >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
@@ -219,7 +267,44 @@ export default function ScreenProductos() {
         )
       }
 
-
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View className="flex-1 justify-center items-center bg-opacity-50">
+          <View className="bg-white p-4 rounded-lg w-4/5">
+            <Text className="font-bold text-lg mb-4">Selecciona cantidad y añade comentario</Text>
+            
+            <Text className="font-semibold mb-2">Cantidad:</Text>
+            <TextInput
+              className="border border-gray-300 p-2 rounded-md mb-4"
+              keyboardType="numeric"
+              value={cantidad.toString()}
+              onChangeText={(value) => setCantidad(Number(value))}
+            />
+            
+            <Text className="font-semibold mb-2">Comentario:</Text>
+            <TextInput
+              className="border border-gray-300 p-2 rounded-md mb-4"
+              multiline
+              value={comentario}
+              onChangeText={setComentario}
+            />
+            
+            <View className="flex-row justify-end">
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="bg-gray-400 p-2 rounded-md mr-2"
+              >
+                <Text className="text-white">Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleAddCarrito}
+                className="bg-green-500 p-2 rounded-md"
+              >
+                <Text className="text-white">Añadir al Carrito</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
