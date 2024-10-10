@@ -1,4 +1,4 @@
-import { Link, useLocalSearchParams } from 'expo-router';
+import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, Image, ImageBackground, TouchableOpacity, Alert, FlatList, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, SimpleLineIcons } from '@expo/vector-icons';
@@ -41,6 +41,8 @@ export default function ProductoScreen() {
     return <Text>Cargando</Text>
 
   }
+  const router = useRouter(); // Obtén el hook de enrutamiento
+
   /*
   const [productoAReemplazar, setProductoAReemplazar] = useState<Producto | null>(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
@@ -223,7 +225,17 @@ export default function ProductoScreen() {
     </View>
 
   );
+  const totalCarrito = listaProductos?.reduce(
+    (total, item) => total + item.producto.precio_producto * item.cantidad,
+    0
+  ) ?? 0;
+  const handlePress = () => {
+
+
+    router.push(`/(tabs)/home/carrito`); // Asegúrate de que el tipo es compatible
+  };
   return (
+    <>
     <SafeAreaView className="flex-1 bg-white">
       <FlatList
         data={estable.productos}
@@ -272,6 +284,22 @@ export default function ProductoScreen() {
         </View>
       </Modal>
     </SafeAreaView>
+    <View className='h-[10vh] bg-white flex-row items-center justify-between p-4'>
+      <Text className="text-black font-bold text-lg">Total Carrito:</Text>
+      <Text className="text-black font-bold text-lg">${totalCarrito.toFixed(2)}</Text>
+      <TouchableOpacity onPress={()=>handlePress()}
+        style={{
+          backgroundColor: '#F37A20',
+          padding: 10,
+          borderRadius: 8,
+        }}
+        className='flex flex-row items-center justify-between'>
+        <SimpleLineIcons name="handbag" size={24}  />
+        <Text style={{ fontSize: 16}} className='ml-4'>Ir Carrito</Text>
+
+      </TouchableOpacity>
+    </View>
+    </>
   );
 }
 
