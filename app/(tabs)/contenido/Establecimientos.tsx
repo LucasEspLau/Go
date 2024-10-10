@@ -73,10 +73,10 @@ export default function ScreenEstablecimientos() {
   );
   return (
     
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="bg-white">
       <TouchableOpacity
         onPress={() => router.back()} // Botón para regresar a la página anterior
-        className="p-4"
+        className="p-4 mt-4"
       >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>

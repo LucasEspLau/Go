@@ -46,6 +46,7 @@ export type EstablecimientoXProducto={
 export type DetalleCarrito={
     producto:Producto;
     cantidad: number;
+    comentario: string;
 }
 export type CategoriaEstablecimiento ={
     id_categoria_establecimiento: number;
