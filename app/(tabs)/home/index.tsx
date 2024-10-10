@@ -9,6 +9,8 @@ import {
   ImageBackground,
   TouchableOpacity,
   Modal,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -22,11 +24,13 @@ import {
   useEstablecimientosXProductos,
   useLocationStore,
   useLugar,
+  usePromocion,
 } from "@/store";
 import {
   CategoriaEstablecimiento,
   CategoriaProducto,
   EstablecimientoXProducto,
+  Producto,
 } from "@/util/definitions";
 
 export default function HomeScreen() {
@@ -34,13 +38,16 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(true);
-  const [anuncio, setAnuncio] = useState();
+  const [anuncio, setAnuncio] = useState<Producto>();
   const { setUserLocation } = useLocationStore();
   const { setCategoriasEstablecimiento } = useCategoriasEstablecimiento();
   const { setCategoriasProducto } = useCategoriasProducto();
   const { setEstablecimientosXProductos } = useEstablecimientosXProductos();
+  const { listaPromociones,setPromocion } = usePromocion();
   const { id_lugar } = useLugar();
   const [hasPermission, setHasPermission] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
 
   useEffect(() => {
     const requestLocation = async () => {
@@ -146,6 +153,27 @@ export default function HomeScreen() {
         setAnuncio(result);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } 
+      
+      try {
+        const response = await fetch(
+          "https://api.deliverygoperu.com/productos_promocion.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: "2342423423423",
+              id_lugar:id_lugar
+            }),
+          }
+        );
+        const result = await response.json();
+        const listaPromociones =result as Producto[];
+        setPromocion({listaPromociones});
+      } catch (error) {
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
@@ -154,6 +182,28 @@ export default function HomeScreen() {
     fetchData();
   }, []);
 
+
+  const handleNext = () => {
+    if (listaPromociones && listaPromociones.length > 0) {
+      // Si estás en el último elemento, vuelve al primero
+      if (currentIndex === listaPromociones.length - 1) {
+        setCurrentIndex(0);
+      } else {
+        setCurrentIndex(currentIndex + 1);
+      }
+    }
+  };
+
+  const handlePrev = () => {
+    if (listaPromociones && listaPromociones.length > 0) {
+      // Si estás en el primer elemento, salta al último
+      if (currentIndex === 0) {
+        setCurrentIndex(listaPromociones.length - 1);
+      } else {
+        setCurrentIndex(currentIndex - 1);
+      }
+    }
+  };
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-row min-h-[8vh] items-center justify-between">
@@ -164,29 +214,34 @@ export default function HomeScreen() {
         />
       </View>
 
-      <TouchableOpacity
-   onPress={() => {
-    console.log("Navegando a Search...");
-    navigation.navigate("Search" as never); // Asegúrate de que el nombre de la pantalla sea correcto
-  }}
-  style={{
-    backgroundColor: "#E7E8EA",
-    borderRadius: 30,
-    padding: 20,
-    flex: 1,
-  }}
->
-  <TextInput
-    placeholder="Buscar productos o ubicación"
-    editable={false} // No editable para que actúe solo como un botón
-    style={{
-      backgroundColor: "transparent", // Hacer el fondo transparente
-      borderRadius: 30,
-      padding: 10,
-      flex: 1,
-    }}
-  />
-</TouchableOpacity>
+      <View
+        className="h-[8vh]"
+        >
+        <TouchableOpacity
+          onPress={() => {
+            console.log("Navegando a Search...");
+            navigation.navigate("Search" as never); // Asegúrate de que el nombre de la pantalla sea correcto
+          }}
+          style={{
+            backgroundColor: "#E7E8EA",
+            borderRadius: 30,
+            flex: 1,
+          }}
+        >
+          <TextInput
+            placeholder="Buscar productos o ubicación"
+            editable={false} // No editable para que actúe solo como un botón
+
+            style={{
+              backgroundColor: "transparent", // Hacer el fondo transparente
+              borderRadius: 30,
+              padding: 10,
+              flex: 1,
+            }}
+          />
+        </TouchableOpacity>
+      </View>
+
 
 
 
@@ -212,8 +267,58 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <IconPromo anuncio={anuncio} />
 
+
+      {
+        !listaPromociones || listaPromociones.length === 0 ? (
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#0000ff" />
+          </View>
+        ) : (
+          <View className="flex-1 bg-white">
+            <View className="flex flex-row items-center justify-center mt-4">
+              {/* Botón de retroceder */}
+              <TouchableOpacity
+                onPress={handlePrev}
+                style={{
+                  backgroundColor: "#E7E8EA",
+                  padding: 10,
+                  borderRadius: 30,
+                  marginRight: -10,
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>{"<"}</Text>
+              </TouchableOpacity>
+
+              {/* Mostrar la promoción actual */}
+              <IconPromo anuncio={listaPromociones[currentIndex]} />
+
+              {/* Botón de avanzar */}
+              <TouchableOpacity
+                onPress={handleNext}
+                style={{
+                  backgroundColor: "#E7E8EA",
+                  padding: 10,
+                  borderRadius: 30,
+                  marginLeft: -10,
+                }}
+              >
+                <Text style={{ fontSize: 20 }}>{">"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )
+      }
+
+
+
+      {/*
+      <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+        {listaPromociones?.map((promo: Producto, index: number) => (
+          <IconPromo key={index} anuncio={promo} />
+        ))}
+      </ScrollView>   
+      */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -221,19 +326,31 @@ export default function HomeScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View className="flex-1 justify-center items-center">
-          <View className="bg-white rounded-lg p-4">
-            <IconPromo anuncio={anuncio} />
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={{ marginTop: 10 }}
-            >
-              <Text style={{ textAlign: "center", fontWeight: "bold" }}>
-                Cerrar
-              </Text>
-            </TouchableOpacity>
+          <View className="bg-white rounded-lg p-4 w-[90%] h-[60%]">
+            {anuncio ? (
+              // Mostrar el contenido del anuncio si está disponible
+              <>
+                <IconPromo anuncio={anuncio} />
+                <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={{ marginTop: 10 }}
+                >
+                  <Text style={{ textAlign: "center", fontWeight: "bold" }}>
+                    Cerrar
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              // Contenedor que centra el ActivityIndicator
+              <View className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#0000ff" />
+              </View>
+            )}
           </View>
         </View>
       </Modal>
+
+
 
       <StatusBar style="auto" />
     </SafeAreaView>
@@ -273,13 +390,13 @@ export function IconCat({
   );
 }
 
-export function IconPromo({ anuncio }: { anuncio: any }) {
+export function IconPromo({ anuncio }: { anuncio: Producto }) {
   const productoAnuncio = productosSample[0];
   return (
     <View className="p-4 h-[50vh] rounded-lg flex justify-center items-center">
       <ImageBackground
         className="w-[40vh] h-[40vh] border border-1 rounded-lg flex flex-col justify-between"
-        source={{ uri: productoAnuncio.img_producto }}
+        source={{ uri: anuncio.img_producto }}
         resizeMode="cover"
       >
         <Text className="mt-4 ml-4 text-white font-bold bg-black w-[20vh] rounded-full p-2">
@@ -287,10 +404,10 @@ export function IconPromo({ anuncio }: { anuncio: any }) {
         </Text>
         <View className="mr-2 ml-2 bg-white">
           <Text className="mt-2 mb-2 text-black font-moon">
-            {productoAnuncio.nombre_producto}
+            {anuncio.nombre_producto}
           </Text>
           <Text className="text-black font-moon">
-            PRECIO: S/.{productoAnuncio.precio_producto}
+            PRECIO: S/.{anuncio.precio_producto}
           </Text>
         </View>
       </ImageBackground>

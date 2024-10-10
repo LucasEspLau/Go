@@ -61,6 +61,16 @@ export type CategoriaProducto ={
     img: string;
     estado: number;
 }
+
+export declare type Promocion ={
+    listaPromociones: Producto[]|null;
+    setPromocion: ({
+        listaPromociones,
+    }:{
+        listaPromociones: Producto[];
+    })=> void;
+}
+
 export declare type Lugar ={
     id_lugar: number|null;
     nombre: string|null;
