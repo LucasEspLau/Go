@@ -14,72 +14,18 @@ export default function Search() {
   const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Fetch all establishments on component mount
-  
   useEffect(() => {
     const fetchAllEstablecimientos = async () => {
       setLoading(true);
       try {
-        const response = await fetch('https://api.deliverygoperu.com/establecimiento_categoria.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id_lugar }),
-          
-        });
-        
-  
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Establecimientos fetched on mount:', data);
-          setEstablecimientos(data); // Establece los establecimientos
-        } else {
-          console.error('Error fetching all establishments:', response.status);
-        }
-      } catch (error) {
-        console.error('Error fetching all establishments:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchAllEstablecimientos();
-  }, [id_lugar]);
-  
-
-  useEffect(() => {
-    const fetchEstablecimientos = async () => {
-      if (searchQuery.trim() === '') {
-        setEstablecimientos([]); // Clear the list if the search query is empty
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      const categoriaId = listaCategoriasEstablecimiento && listaCategoriasEstablecimiento.length > 0 
-        ? listaCategoriasEstablecimiento[0].id_categoria_establecimiento 
-        : null;
-
-      if (!categoriaId) {
-        setError('No hay categorías disponibles.');
-        setLoading(false);
-        return;
-      }
-
-      try {
         const body = {
           token: "2342423423423",
-          categoria: categoriaId,
           id_lugar,
-          nombre: searchQuery
         };
 
-        console.log('Fetching establishments with parameters:', body); // Log the parameters
-
-        const response = await fetch('https://api.deliverygoperu.com/productos_buscar_lugar.php', {
+        const response = await fetch('https://api.deliverygoperu.com/establecimiento_productos.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -89,35 +35,81 @@ export default function Search() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Response data:', data); // Log the response data
-          if (data.length === 0) {
-            setError('No se encontraron establecimientos.');
-          } else {
-            setEstablecimientos(data);
-          }
+          console.log('Establecimientos fetched on mount:', data);
+          setEstablecimientos(data); // Set establishments
         } else {
-          console.error('Error in the request:', response.status);
-          const errorText = await response.text(); // Get the response text
-          console.error('Error details:', errorText); // Log error details
-          setError('No se pudo obtener establecimientos.');
+          console.error('Error fetching all establishments:', response.status);
+          setError('Error al cargar los establecimientos. Intente de nuevo más tarde.');
         }
       } catch (error) {
-        console.error('Error while fetching data:', error);
-        setError('Error de conexión.');
+        console.error('Error fetching all establishments:', error);
+        setError('Error de conexión. Verifique su internet.');
       } finally {
         setLoading(false);
       }
     };
 
+    fetchAllEstablecimientos();
+  }, [id_lugar]);
+
+  const fetchEstablecimientos = async () => {
+    if (searchQuery.trim() === '') {
+      // If the search is empty, return the original establishments
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const body = {
+        token: "2342423423423",
+        buscar: searchQuery, // Use 'buscar' instead of 'nombre'
+        id_lugar,
+      };
+
+      console.log('Fetching establishments with parameters:', body); // Log the parameters
+
+      const response = await fetch('https://api.deliverygoperu.com/productos_buscar_lugar.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Response data:', data); // Log the response data
+        if (data.length === 0) {
+          setError('No se encontraron establecimientos.');
+          setEstablecimientos([]); // Clear the list if no results found
+        } else {
+          setEstablecimientos(data);
+        }
+      } else {
+        console.error('Error in the request:', response.status);
+        const errorText = await response.text(); // Get the response text
+        console.error('Error details:', errorText); // Log error details
+        setError('No se pudo obtener establecimientos. Intente de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error while fetching data:', error);
+      setError('Error de conexión. Verifique su internet.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
     fetchEstablecimientos();
-  }, [searchQuery, id_lugar, listaCategoriasEstablecimiento]);
-  
+  };
 
   const renderEstablecimiento = ({ item }: { item: Establecimiento }) => (
     <View style={styles.establecimientoItem}>
       <Image source={{ uri: item.logo_establecimiento }} style={styles.establecimientoImage} />
       <Text>{item.nombre_establecimiento}</Text>
-      <Text>{`Horario: ${item.horario_inicio} - ${item.horario_fin}`}</Text>
+      <Text>{`Horario: ${item.horario_inicio || 'No disponible'} - ${item.horario_fin || 'No disponible'}`}</Text>
       <TouchableOpacity onPress={() => router.push(`/(tabs)/contenido/establecimiento/${item.id_establecimiento}`)}>
         <Text style={styles.establecimientoDetail}>Ver Detalles</Text>
       </TouchableOpacity>
@@ -135,6 +127,9 @@ export default function Search() {
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
+      <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
+        <Text style={styles.searchButtonText}>Buscar</Text>
+      </TouchableOpacity>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : error ? (
@@ -145,6 +140,7 @@ export default function Search() {
           renderItem={renderEstablecimiento}
           keyExtractor={(item) => item.id_establecimiento ? item.id_establecimiento.toString() : Math.random().toString()}
           contentContainerStyle={styles.establecimientoList}
+          ListEmptyComponent={<Text style={styles.emptyListText}>No hay resultados para "{searchQuery}"</Text>} // Empty state message
         />
       )}
     </SafeAreaView>
@@ -167,6 +163,16 @@ const styles = StyleSheet.create({
     padding: 8,
     marginBottom: 8,
   },
+  searchButton: {
+    backgroundColor: '#007BFF', // Change this to your desired color
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   establecimientoList: {
     paddingBottom: 20,
   },
@@ -187,5 +193,10 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     marginVertical: 10,
+  },
+  emptyListText: {
+    textAlign: 'center',
+    color: 'gray',
+    marginTop: 20,
   },
 });
