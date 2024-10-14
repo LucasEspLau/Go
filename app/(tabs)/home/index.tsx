@@ -24,12 +24,14 @@ import {
   useEstablecimientosXProductos,
   useLocationStore,
   useLugar,
+  useMetodosPago,
   usePromocion,
 } from "@/store";
 import {
   CategoriaEstablecimiento,
   CategoriaProducto,
   EstablecimientoXProducto,
+  MetodoPago,
   Producto,
 } from "@/util/definitions";
 
@@ -44,6 +46,7 @@ export default function HomeScreen() {
   const { setCategoriasProducto } = useCategoriasProducto();
   const { setEstablecimientosXProductos } = useEstablecimientosXProductos();
   const { listaPromociones,setPromocion } = usePromocion();
+  const { setMetodosPago } = useMetodosPago();
   const { id_lugar } = useLugar();
   const [hasPermission, setHasPermission] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,7 +59,7 @@ export default function HomeScreen() {
         setHasPermission(false);
         return;
       }
-
+/*
       let location = await Location.getCurrentPositionAsync();
       const address = await Location.reverseGeocodeAsync({
         latitude: location.coords?.latitude!,
@@ -66,7 +69,7 @@ export default function HomeScreen() {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         address: `${address[0].name}, ${address[0].region}`,
-      });
+      });*/
     };
     requestLocation();
   }, []);
@@ -151,6 +154,26 @@ export default function HomeScreen() {
         );
         const result = await response.json();
         setAnuncio(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } 
+
+      try {
+        const response = await fetch(
+          "https://api.deliverygoperu.com/metodo_pago.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: "2342423423423",
+            }),
+          }
+        );
+        const result = await response.json();
+        const metodosPago=result as MetodoPago[]
+        setMetodosPago({metodosPago});
       } catch (error) {
         console.error("Error fetching data:", error);
       } 

@@ -1,4 +1,4 @@
-import { useCarrito, useCategoriasProducto, useEstablecimientosXProductos, useLugar } from '@/store';
+import { useCarrito, useCategoriasProducto, useEstablecimientosXProductos, useLocationStore, useLugar } from '@/store';
 import { productosSample } from '@/util/data';
 import { CategoriaProducto, DetalleCarrito, EstablecimientoXProducto, Producto } from '@/util/definitions';
 import { useRouter } from 'expo-router';
@@ -19,6 +19,7 @@ export default function ScreenProductos() {
   const {listaCategoriasProducto} =useCategoriasProducto()
   const { listaProductos, setCarrito } = useCarrito();
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
+  const {setDestinationLocation} = useLocationStore();
 
   const {id_lugar} =useLugar();
   if (!listaCategoriasProducto){
@@ -152,7 +153,10 @@ export default function ScreenProductos() {
                   cantidad: cantidad,
                   comentario: comentario,
                 };
+                const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+                console.log(estElegido);
 
+                setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
                 // Reemplazar el carrito
                 setCarrito({
                   listaProductos: [nuevoDetalle],
@@ -192,7 +196,10 @@ export default function ScreenProductos() {
           cantidad: cantidad,
           comentario: comentario,
         };
+        const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+        console.log(estElegido);
 
+        setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
         setCarrito({
           listaProductos: [...productosEnCarrito, nuevoDetalle],
         });

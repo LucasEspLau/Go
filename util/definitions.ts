@@ -62,6 +62,20 @@ export type CategoriaProducto ={
     img: string;
     estado: number;
 }
+export type MetodoPago={
+    id_pago: number;
+    metodo_pago:string;
+    porcentaje: number;
+}
+
+export declare type MetodosPago={
+    metodosPago: MetodoPago[]|null;
+    setMetodosPago: ({
+        metodosPago,
+    }:{
+        metodosPago: MetodoPago[];
+    })=> void;
+}
 
 export declare type Promocion ={
     listaPromociones: Producto[]|null;

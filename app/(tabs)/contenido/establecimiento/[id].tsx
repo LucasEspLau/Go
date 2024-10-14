@@ -3,7 +3,7 @@ import { View, Text, Image, ImageBackground, FlatList, TouchableOpacity, Alert, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, SimpleLineIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useCarrito, useEstablecimientosXProductos } from '@/store';
+import { useCarrito, useEstablecimientosXProductos, useLocationStore } from '@/store';
 import { useEffect, useState } from 'react';
 import { DetalleCarrito, EstablecimientoXProducto, Producto } from '@/util/definitions';
 import Toast from 'react-native-toast-message';
@@ -11,7 +11,7 @@ import Toast from 'react-native-toast-message';
 export default function Establecimiento() {
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
   const { listaProductos, setCarrito } = useCarrito();
-
+  const {setDestinationLocation} = useLocationStore();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
   const [cantidad, setCantidad] = useState<number>(1);
@@ -100,7 +100,11 @@ export default function Establecimiento() {
                   cantidad: cantidad,
                   comentario: comentario,
                 };
+                
+                const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+                console.log(estElegido);
 
+                setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
                 // Reemplazar el carrito
                 setCarrito({
                   listaProductos: [nuevoDetalle],
@@ -140,7 +144,9 @@ export default function Establecimiento() {
           cantidad: cantidad,
           comentario: comentario,
         };
-
+        const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+        console.log(estElegido);
+        setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
         setCarrito({
           listaProductos: [...productosEnCarrito, nuevoDetalle],
         });

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Image, ImageBackground, TouchableOpacity, Alert
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, SimpleLineIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useCarrito, useEstablecimientosXProductos } from '@/store';
+import { useCarrito, useEstablecimientosXProductos, useLocationStore } from '@/store';
 import { DetalleCarrito, EstablecimientoXProducto, Producto } from '@/util/definitions';
 import { useEffect, useState } from 'react';
 import Toast from 'react-native-toast-message';
@@ -11,6 +11,7 @@ import Toast from 'react-native-toast-message';
 export default function ProductoScreen() {
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
   const { listaProductos, setCarrito } = useCarrito();
+  const {setDestinationLocation} = useLocationStore();
 
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -106,7 +107,10 @@ export default function ProductoScreen() {
                   cantidad: cantidad,
                   comentario: comentario,
                 };
+                const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+                console.log(estElegido);
 
+                setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
                 // Reemplazar el carrito
                 setCarrito({
                   listaProductos: [nuevoDetalle],
@@ -146,7 +150,10 @@ export default function ProductoScreen() {
           cantidad: cantidad,
           comentario: comentario,
         };
+        const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+        console.log(estElegido);
 
+        setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
         setCarrito({
           listaProductos: [...productosEnCarrito, nuevoDetalle],
         });
