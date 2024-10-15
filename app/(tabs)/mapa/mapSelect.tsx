@@ -1,9 +1,10 @@
 import { useLocationStore } from "@/store";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT, Region } from "react-native-maps";
 import * as Location from "expo-location";
-
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 export default function MapSelect() {
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Estado de carga
@@ -86,53 +87,75 @@ export default function MapSelect() {
   if (!apiKey) {
     return <Text>API Key no está definida.</Text>;
   }
-  console.log("PERSONA",markerCoordinate.latitude,markerCoordinate.longitude)
-
-  console.log("DESTINO",destinationLatitude,destinationLongitude)
+  console.log("PERSONA", markerCoordinate.latitude, markerCoordinate.longitude);
+  console.log("DESTINO", destinationLatitude, destinationLongitude);
+  
   return (
-    <MapView 
-      provider={PROVIDER_DEFAULT} 
-      className="w-full h-full"
-      mapType="mutedStandard"
-      showsPointsOfInterest={false}
-      showsUserLocation={true}
-      userInterfaceStyle="light"
-      region={region} // Establecer la región del mapa
-      onRegionChangeComplete={(newRegion) => {
-        setRegion(newRegion); // Actualiza la región cuando se mueve el mapa
-      }}
-    >
-      {markerCoordinate.latitude !== 0 && markerCoordinate.longitude !== 0 && (
-        <Marker 
-          coordinate={markerCoordinate}
-          draggable // Hacer que el marcador sea arrastrable
-          onDragEnd={(e) => {
-            const { latitude, longitude } = e.nativeEvent.coordinate;
-            setMarkerCoordinate({ latitude, longitude });
-            setUserLocation({ latitude, longitude, address: "" });
-            // Actualiza la región al arrastrar el marcador
-            setRegion((prevRegion) => ({
-              latitude,
-              longitude,
-              latitudeDelta: prevRegion.latitudeDelta,
-              longitudeDelta: prevRegion.longitudeDelta,
-            }));
-          }}
-        />
-      )}
-        {destinationLatitude !== undefined && destinationLongitude !== undefined  && (
-        <Marker 
-            coordinate={{ 
-            latitude: Number(destinationLatitude), 
-            longitude: Number(destinationLongitude) 
+    <View className="flex-1">
+      {/* Botón circular sobre el mapa */}
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          position: "absolute",
+          top: 40, // Ajusta esta propiedad para la distancia desde la parte superior
+          left: 20, // Ajusta esta propiedad para la distancia desde el borde izquierdo
+          backgroundColor: "white",
+          borderRadius: 25, // Radio para hacer el botón circular
+          padding: 10, // Ajusta el tamaño del botón
+          zIndex: 1, // Asegura que el botón esté encima del mapa
+          elevation: 5, // Sombra para dar efecto elevado
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
+
+      {/* Mapa */}
+      <MapView
+        provider={PROVIDER_DEFAULT}
+        className="w-full h-full"
+        mapType="mutedStandard"
+        showsPointsOfInterest={false}
+        showsUserLocation={true}
+        userInterfaceStyle="light"
+        region={region} // Establecer la región del mapa
+        onRegionChangeComplete={(newRegion) => {
+          setRegion(newRegion); // Actualiza la región cuando se mueve el mapa
+        }}
+      >
+        {markerCoordinate.latitude !== 0 && markerCoordinate.longitude !== 0 && (
+          <Marker
+            coordinate={markerCoordinate}
+            draggable // Hacer que el marcador sea arrastrable
+            onDragEnd={async (e) => {
+              const { latitude, longitude  } = e.nativeEvent.coordinate;
+              setMarkerCoordinate({ latitude, longitude });
+              const addressUser = await Location.reverseGeocodeAsync({
+                latitude: latitude,
+                longitude: longitude,
+              });
+              setUserLocation({ latitude, longitude, address: `${addressUser[0].name}, ${addressUser[0].region}` });
+              // Actualiza la región al arrastrar el marcador
+              setRegion((prevRegion) => ({
+                latitude,
+                longitude,
+                latitudeDelta: prevRegion.latitudeDelta,
+                longitudeDelta: prevRegion.longitudeDelta,
+              }));
             }}
-            pinColor="red" 
+          />
+        )}
+        {destinationLatitude != null && destinationLongitude != null && (
+          <Marker
+            coordinate={{
+              latitude: Number(destinationLatitude),
+              longitude: Number(destinationLongitude),
+            }}
+            pinColor="red"
             title="Destino"
             description="Este es tu destino"
-        />
+          />
         )}
-
-
-    </MapView>
+      </MapView>
+    </View>
   );
 }

@@ -17,7 +17,7 @@ export default function ScreenProductos() {
   const router = useRouter(); // Obtén el hook de enrutamiento
 
   const {listaCategoriasProducto} =useCategoriasProducto()
-  const { listaProductos, setCarrito } = useCarrito();
+  const { listaProductos, setCarrito,setEstablecimiento } = useCarrito();
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
   const {setDestinationLocation} = useLocationStore();
 
@@ -155,7 +155,7 @@ export default function ScreenProductos() {
                 };
                 const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
                 console.log(estElegido);
-
+                setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
                 setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
                 // Reemplazar el carrito
                 setCarrito({
@@ -198,6 +198,7 @@ export default function ScreenProductos() {
         };
         const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
         console.log(estElegido);
+        setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
 
         setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
         setCarrito({

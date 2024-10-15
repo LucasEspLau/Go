@@ -10,7 +10,7 @@ import Toast from 'react-native-toast-message';
 
 export default function ProductoScreen() {
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
-  const { listaProductos, setCarrito } = useCarrito();
+  const { listaProductos, setCarrito, setEstablecimiento } = useCarrito();
   const {setDestinationLocation} = useLocationStore();
 
 
@@ -109,6 +109,7 @@ export default function ProductoScreen() {
                 };
                 const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
                 console.log(estElegido);
+                setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
 
                 setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
                 // Reemplazar el carrito
@@ -152,6 +153,7 @@ export default function ProductoScreen() {
         };
         const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
         console.log(estElegido);
+        setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
 
         setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
         setCarrito({

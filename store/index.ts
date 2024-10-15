@@ -133,6 +133,7 @@ export const useLugar=create<Lugar>((set)=>({
 }))
 
 export const useCarrito=create<Carrito>((set)=>({
+    id_establecimiento: null,
     listaProductos:null,
     setCarrito:({
         listaProductos,
@@ -141,6 +142,15 @@ export const useCarrito=create<Carrito>((set)=>({
     })=>{
         set(()=>({
             listaProductos: listaProductos,
+        }));
+    },
+    setEstablecimiento:({
+        id_establecimiento,
+    }:{
+        id_establecimiento: number;
+    })=>{
+        set(()=>({
+            id_establecimiento: id_establecimiento,
         }));
     }
 }))

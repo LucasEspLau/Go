@@ -238,7 +238,7 @@ export default function HomeScreen() {
       </View>
 
       <View
-        className="h-[8vh]"
+        className="h-[8vh] mb-2"
         >
         <TouchableOpacity
           onPress={() => {
@@ -306,15 +306,20 @@ export default function HomeScreen() {
                 style={{
                   backgroundColor: "#E7E8EA",
                   padding: 10,
+                  paddingVertical:20,
                   borderRadius: 30,
-                  marginRight: -10,
+                  marginLeft: 20,
+                  marginRight: -20,
+                  zIndex:20
                 }}
               >
                 <Text style={{ fontSize: 20 }}>{"<"}</Text>
               </TouchableOpacity>
 
               {/* Mostrar la promoción actual */}
-              <IconPromo anuncio={listaPromociones[currentIndex]} />
+              <IconPromo 
+                anuncio={listaPromociones[currentIndex]} 
+              />
 
               {/* Botón de avanzar */}
               <TouchableOpacity
@@ -322,8 +327,11 @@ export default function HomeScreen() {
                 style={{
                   backgroundColor: "#E7E8EA",
                   padding: 10,
+                  paddingVertical:20,
                   borderRadius: 30,
-                  marginLeft: -10,
+                  marginLeft: -20,
+                  marginRight: 20,
+                  zIndex:20
                 }}
               >
                 <Text style={{ fontSize: 20 }}>{">"}</Text>
@@ -416,7 +424,7 @@ export function IconCat({
 export function IconPromo({ anuncio }: { anuncio: Producto }) {
   const productoAnuncio = productosSample[0];
   return (
-    <View className="p-4 h-[50vh] rounded-lg flex justify-center items-center">
+    <View className="p-4 z-10 h-[50vh] rounded-lg flex justify-center items-center">
       <ImageBackground
         className="w-[40vh] h-[40vh] border border-1 rounded-lg flex flex-col justify-between"
         source={{ uri: anuncio.img_producto }}

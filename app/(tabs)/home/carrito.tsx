@@ -2,15 +2,15 @@ import { useCarrito, useLocationStore, useMetodosPago } from "@/store";
 import { DetalleCarrito } from "@/util/definitions";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
-import { Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from 'react-native-toast-message';
 import DropDownPicker  from "react-native-dropdown-picker"
 import { useState } from "react";
 
 export default function Carrito() {
-  const { listaProductos, setCarrito } = useCarrito();
-  const { userLatitude,userLongitude } = useLocationStore();
+  const { listaProductos, setCarrito, id_establecimiento } = useCarrito();
+  const { userLatitude,userLongitude,userAddress } = useLocationStore();
 
   const { metodosPago } =useMetodosPago();
   const [open, setOpen] = useState(false);
@@ -91,6 +91,66 @@ export default function Carrito() {
         : detalle
     ) ?? [];
     setCarrito({ listaProductos: updatedList });
+  };
+
+
+  const fetchPago = async () => {
+
+    const dataPagar={
+      id_cliente:1,
+      id_establecimiento:id_establecimiento,
+      monto:calcularTotal().toFixed(2),
+      direccion:userAddress,
+      latitud:userLatitude,
+      longitud:userLongitude,
+      metodo_pago:value,
+      productos: [listaProductos?.map((item) => ({
+        id_producto:item.producto.id_producto,
+        comentario:item.comentario
+      }))]
+    }
+    console.log('Procesando pago con los siguientes datos:', dataPagar);
+    console.log('Procesando pago con los siguientes datos:', dataPagar.productos[0]);
+    try {
+      const response = await fetch(
+        "https://api.deliverygoperu.com/recibir_pedido.php",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(dataPagar),
+        }
+      );
+      const data = await response.json();
+      console.log("Data pago:", data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+
+  const confirmarPago = () => {
+    Alert.alert(
+      "Confirmar Pago",
+      "¿Estás seguro de que deseas realizar el pago?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Aceptar",
+          onPress: async () => {
+            await fetchPago();
+            Toast.show({
+              type: 'success',
+              text1: 'Pago realizado con éxito',
+            });
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
   return (
     
@@ -182,25 +242,25 @@ export default function Carrito() {
           </View>
           <TouchableOpacity
             style={{
-              backgroundColor: userLatitude && userLongitude ? '#F37A20' : '#ccc', // Cambia el color si no hay ubicación
+              backgroundColor: userLatitude && userLongitude && value ? '#F37A20' : '#ccc', // Cambia el color según la condición
               padding: 10,
               borderRadius: 8,
               marginTop: 10,
             }}
-            onPress={() => {
-              if (userLatitude && userLongitude) {
-                alert("Pago realizado"); // Cambia esto por la lógica real de pago
-              } else {
-                alert("Por favor selecciona una ubicación antes de pagar."); // Mensaje de advertencia
-              }
-            }}
+            onPress={confirmarPago}
             className='flex flex-row justify-center'
-            disabled={!userLatitude || !userLongitude} // Deshabilitar el botón si no hay ubicación
+            disabled={!userLatitude || !userLongitude || !value} // Deshabilitar si no hay ubicación o método de pago
           >
             <Text style={{ fontSize: 16, color: 'white', marginRight: 10 }}>
-              {userLatitude && userLongitude ? "Pagar" : "Ubicación no disponible"}
+              {!userLatitude || !userLongitude 
+                ? "Ubicación no seleccionada"  // Mensaje cuando la ubicación no está seleccionada
+                : !value 
+                ? "Selecciona un método de pago"  // Mensaje cuando el método de pago no está seleccionado
+                : "Pagar"  // Mensaje por defecto si todo está correcto
+              }
             </Text>
           </TouchableOpacity>
+
         </View>
       </View>
       <Toast />

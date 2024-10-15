@@ -172,6 +172,7 @@ export declare interface EstablecimientosXProductos{
 }
 
 export declare interface Carrito {
+    id_establecimiento: number | null;
     listaProductos: DetalleCarrito[] | null;
 
     setCarrito: ({
@@ -179,5 +180,9 @@ export declare interface Carrito {
     }: {
         listaProductos: DetalleCarrito[];
     }) => void;
-
+    setEstablecimiento:({
+        id_establecimiento,
+    }: {
+        id_establecimiento: number;
+    }) => void;
 }
