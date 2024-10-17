@@ -15,7 +15,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import * as Location from "expo-location";
-import { Link, useNavigation } from "expo-router";
+import { Link, router, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { establecimientos, productosSample } from "@/util/data";
 import {
@@ -50,7 +50,10 @@ export default function HomeScreen() {
   const { id_lugar } = useLugar();
   const [hasPermission, setHasPermission] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const handleNavigation = () => {
+    console.log("Navegando a Search...");
+    router.push("/(tabs)/contenido/Search");
+  };
 
   useEffect(() => {
     const requestLocation = async () => {
@@ -237,36 +240,33 @@ export default function HomeScreen() {
         />
       </View>
 
-      <View
-        className="h-[8vh] mb-2"
-        >
-        <TouchableOpacity
-          onPress={() => {
-            console.log("Navegando a Search...");
-            navigation.navigate("Search" as never); // Asegúrate de que el nombre de la pantalla sea correcto
-          }}
+     
+      <View >
+      <TouchableOpacity
+        onPress={handleNavigation}
+        activeOpacity={0.7}
+        style={{
+          backgroundColor: "#E7E8EA",
+          borderRadius: 30,
+          marginTop: 20,
+          paddingVertical: 15,  // Aumenta el padding vertical
+          paddingHorizontal: 20, // Espaciado horizontal dentro del botón
+          width: '80%',         // Ocupa todo el ancho disponible
+          maxWidth: 400,        // Establece un ancho máximo para que no se expanda demasiado
+          alignSelf: 'center',  // Centra el botón horizontalmente
+        }}
+      >
+        <Text
           style={{
-            backgroundColor: "#E7E8EA",
-            borderRadius: 30,
-            flex: 1,
+            color: "#000",
+            fontSize: 16,
+            textAlign: 'center',
           }}
         >
-          <TextInput
-            placeholder="Buscar productos o ubicación"
-            editable={false} // No editable para que actúe solo como un botón
-
-            style={{
-              backgroundColor: "transparent", // Hacer el fondo transparente
-              borderRadius: 30,
-              padding: 10,
-              flex: 1,
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-
-
-
+          Busca tus productos favoritos
+        </Text>
+      </TouchableOpacity>
+    </View>
 
       <View className="flex flex-col border border-1">
         <Text
@@ -287,6 +287,7 @@ export default function HomeScreen() {
             name="Productos"
             disabled={loading}
           />
+          
         </View>
       </View>
 

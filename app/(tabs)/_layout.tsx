@@ -26,8 +26,6 @@ export default function RootLayout() {
         <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="contenido" options={{ headerShown: false }} />
         <Stack.Screen name="mapa" options={{ headerShown: false }} />
-        <Stack.Screen name="Search" options={{ headerShown: false }} />
-
       </Stack>
     </ThemeProvider>
   );

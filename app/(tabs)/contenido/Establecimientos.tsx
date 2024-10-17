@@ -13,8 +13,8 @@ export default function ScreenEstablecimientos() {
   if (!listaCategoriasEstablecimiento) {
     return (<Text>Cargando</Text>);
   }
+  
   const [categorias, setCategorias] = useState<CategoriaEstablecimiento[]>(listaCategoriasEstablecimiento);
-
   const [categoria, setCategoria] = useState<CategoriaEstablecimiento>(listaCategoriasEstablecimiento[0]);
   const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([]);
 
@@ -32,6 +32,11 @@ export default function ScreenEstablecimientos() {
             'Content-Type': 'application/json',
           },
         });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
         const data = await response.json();
         setEstablecimientos(data);
       } catch (error) {
@@ -42,7 +47,7 @@ export default function ScreenEstablecimientos() {
     fetchData();
   }, [categoria]);
 
-  const handlePressCategoria = async (item: CategoriaEstablecimiento) => {
+  const handlePressCategoria = (item: CategoriaEstablecimiento) => {
     setCategoria(item);
   };
 
@@ -51,7 +56,7 @@ export default function ScreenEstablecimientos() {
   };
 
   const renderItem = ({ item }: { item: Establecimiento }) => (
-    <CardEstablecimiento item={item} onPress={() => handlePress(item)} categorias={categorias}/>
+    <CardEstablecimiento item={item} onPress={() => handlePress(item)} categorias={categorias} />
   );
 
   const renderCategoryItem = ({ item }: { item: CategoriaEstablecimiento }) => (
@@ -62,24 +67,25 @@ export default function ScreenEstablecimientos() {
     >
       <Image
         className="w-[80px] h-[80px] rounded-xl"
-        source={{ uri: item.img }} // Usa la URL de la imagen
+        source={{ uri: item.img }}
       />
       <Text>{item.nombre}</Text>
     </TouchableOpacity>
   );
-  
+
   const filteredEstablecimientos = establecimientos.filter(item => 
     item.horario_inicio && item.horario_fin && item.nombre_establecimiento && item.descripcion_establecimiento
   );
+
   return (
-    
-    <SafeAreaView className="bg-white">
+    <SafeAreaView className="bg-white flex-1">
       <TouchableOpacity
-        onPress={() => router.back()} // Botón para regresar a la página anterior
+        onPress={() => router.back()}
         className="p-4 mt-4"
       >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
+      
       <ScrollView className='border-2 border-black min-h-[150px] max-h-[150px]'>
         <FlatList
           data={listaCategoriasEstablecimiento}
@@ -90,41 +96,38 @@ export default function ScreenEstablecimientos() {
           contentContainerStyle={{ paddingVertical: 10 }}
         />
       </ScrollView>
-      {filteredEstablecimientos.length > 0 ? ( // Verifica si hay establecimientos filtrados
-      <FlatList
-        data={filteredEstablecimientos}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id_establecimiento + ""}
-        numColumns={1} // Cambiado a 1 para una columna
-        contentContainerStyle={{ paddingHorizontal: 8 }} // Padding horizontal
-      />
-    ) : (
-      <Text className="text-center mt-4">No hay establecimientos disponibles.</Text> // Mensaje cuando no hay establecimientos
-    )}
-
+      
+      {filteredEstablecimientos.length > 0 ? (
+        <FlatList
+          data={filteredEstablecimientos}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id_establecimiento.toString()}
+          numColumns={1}
+          contentContainerStyle={{ paddingHorizontal: 8 }}
+        />
+      ) : (
+        <Text className="text-center mt-4">No hay establecimientos disponibles.</Text>
+      )}
     </SafeAreaView>
   );
 }
 
 export function CardEstablecimiento({ item, onPress, categorias }: { item: Establecimiento; onPress: () => void; categorias: CategoriaEstablecimiento[] }) {
-  // Convierte el id de la categoría a número
   const categoriaId = Number(item.categoria);
-
-  // Busca la categoría correspondiente
   const cat = categorias.find(c => c.id_categoria_establecimiento === categoriaId);
 
   return (
     <TouchableOpacity onPress={onPress} className="flex-row p-2 border-b border-gray-300">
       <Image
-        className="w-[15vh] h-full rounded-xl" // Ajusta el tamaño de la imagen
+        className="w-[15vh] h-full rounded-xl"
         source={{ uri: item.logo_establecimiento }} 
       />
       <View className="flex-1 ml-4 mt-2 mb-2"> 
         <Text className="text-gray-700 mb-1 font-semibold text-left">{item.nombre_establecimiento}</Text>
         {cat ? (
-          <Text className="text-gray-600 mb-1 text-left">{cat.nombre}</Text> // Mostrar el nombre de la categoría
+          <Text className="text-gray-600 mb-1 text-left">{cat.nombre}</Text>
         ) : (
-          <Text className="text-gray-600 mb-1 text-left">Categoría no disponible</Text> // Mensaje en caso de que la categoría no exista
+          <Text className="text-gray-600 mb-1 text-left">Categoría no disponible</Text>
         )}
         <Text className="text-gray-500 mb-1 text-left">{`Horario: ${item.horario_inicio} - ${item.horario_fin}`}</Text>
       </View>

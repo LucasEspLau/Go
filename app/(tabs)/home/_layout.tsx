@@ -22,6 +22,7 @@ export default function TabLayout() {
             <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
           ),
         }}
+        
       />
       <Tabs.Screen
         name="carrito"
@@ -32,6 +33,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      
       <Tabs.Screen
         name="pedidos"
         options={{
@@ -40,6 +42,7 @@ export default function TabLayout() {
             <TabBarIcon name={focused ? 'bag-check' : 'bag-check-outline'} color={color} />
           ),
         }}
+        
       />
     </Tabs>
   );
