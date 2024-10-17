@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useCategoriasEstablecimiento, useLugar } from '@/store';
 import { Establecimiento } from '@/util/definitions';
+import { router } from 'expo-router';
 
 export default function Search() {
   const { id_lugar } = useLugar();
@@ -15,7 +15,6 @@ export default function Search() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch all establishments on component mount
   useEffect(() => {
     const fetchAllEstablecimientos = async () => {
       setLoading(true);
@@ -35,14 +34,11 @@ export default function Search() {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Establecimientos fetched on mount:', data);
-          setEstablecimientos(data); // Set establishments
+          setEstablecimientos(data);
         } else {
-          console.error('Error fetching all establishments:', response.status);
-          setError('Error al cargar los establecimientos. Intente de nuevo más tarde.');
+          setError('Error al cargar los establecimientos.');
         }
       } catch (error) {
-        console.error('Error fetching all establishments:', error);
         setError('Error de conexión. Verifique su internet.');
       } finally {
         setLoading(false);
@@ -53,10 +49,7 @@ export default function Search() {
   }, [id_lugar]);
 
   const fetchEstablecimientos = async () => {
-    if (searchQuery.trim() === '') {
-      // If the search is empty, return the original establishments
-      return;
-    }
+    if (searchQuery.trim() === '') return;
 
     setLoading(true);
     setError(null);
@@ -64,11 +57,9 @@ export default function Search() {
     try {
       const body = {
         token: "2342423423423",
-        buscar: searchQuery, // Use 'buscar' instead of 'nombre'
+        buscar: searchQuery,
         id_lugar,
       };
-
-      console.log('Fetching establishments with parameters:', body); // Log the parameters
 
       const response = await fetch('https://api.deliverygoperu.com/productos_buscar_lugar.php', {
         method: 'POST',
@@ -80,39 +71,29 @@ export default function Search() {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Response data:', data); // Log the response data
-        if (data.length === 0) {
-          setError('No se encontraron establecimientos.');
-          setEstablecimientos([]); // Clear the list if no results found
-        } else {
-          setEstablecimientos(data);
-        }
+        setEstablecimientos(data.length > 0 ? data : []);
       } else {
-        console.error('Error in the request:', response.status);
-        const errorText = await response.text(); // Get the response text
-        console.error('Error details:', errorText); // Log error details
-        setError('No se pudo obtener establecimientos. Intente de nuevo.');
+        setError('No se pudo obtener establecimientos.');
       }
     } catch (error) {
-      console.error('Error while fetching data:', error);
       setError('Error de conexión. Verifique su internet.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = () => {
-    fetchEstablecimientos();
-  };
-
   const renderEstablecimiento = ({ item }: { item: Establecimiento }) => (
     <View style={styles.establecimientoItem}>
       <Image source={{ uri: item.logo_establecimiento }} style={styles.establecimientoImage} />
-      <Text>{item.nombre_establecimiento}</Text>
-      <Text>{`Horario: ${item.horario_inicio || 'No disponible'} - ${item.horario_fin || 'No disponible'}`}</Text>
-      <TouchableOpacity onPress={() => router.push(`/(tabs)/contenido/establecimiento/${item.id_establecimiento}`)}>
-        <Text style={styles.establecimientoDetail}>Ver Detalles</Text>
-      </TouchableOpacity>
+      <View style={styles.establecimientoInfo}>
+        <Text style={styles.nombreEstablecimiento}>{item.nombre_establecimiento}</Text>
+        <Text style={styles.horarioEstablecimiento}>
+          {`Horario: ${item.horario_inicio || 'No disponible'} - ${item.horario_fin || 'No disponible'}`}
+        </Text>
+        <TouchableOpacity onPress={() => router.push(`/(tabs)/contenido/establecimiento/${item.id_establecimiento}`)}>
+          <Text style={styles.establecimientoDetail}>Ver Detalles</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -121,17 +102,28 @@ export default function Search() {
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Buscar establecimientos..."
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
-      <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
-        <Text style={styles.searchButtonText}>Buscar</Text>
-      </TouchableOpacity>
+
+      {/* Barra de búsqueda con ícono de lupa */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="gray" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar establecimientos..."
+          value={searchQuery}
+          onChangeText={(text) => {
+            setSearchQuery(text);
+            fetchEstablecimientos();
+          }}
+        />
+      </View>
+
+      {/* Muestra título "TUS RESULTADOS" si hay resultados */}
+      {establecimientos.length > 0 && (
+        <Text style={styles.resultadosTitle}>TUS RESULTADOS</Text>
+      )}
+
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#F37A20" />
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : (
@@ -140,7 +132,7 @@ export default function Search() {
           renderItem={renderEstablecimiento}
           keyExtractor={(item) => item.id_establecimiento ? item.id_establecimiento.toString() : Math.random().toString()}
           contentContainerStyle={styles.establecimientoList}
-          ListEmptyComponent={<Text style={styles.emptyListText}>No hay resultados para "{searchQuery}"</Text>} // Empty state message
+          ListEmptyComponent={<Text style={styles.emptyListText}>No hay resultados para "{searchQuery}"</Text>}
         />
       )}
     </SafeAreaView>
@@ -156,34 +148,59 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 4,
   },
-  searchInput: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 8,
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  searchButton: {
-    backgroundColor: '#007BFF', // Change this to your desired color
-    padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+  searchIcon: {
+    marginRight: 8,
   },
-  searchButtonText: {
-    color: '#fff',
+  searchInput: {
+    flex: 1,
+  },
+  resultadosTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'left', // Alinea a la izquierda
+    marginLeft: 4, // Ajusta la distancia desde el borde izquierdo
+    color: '#333',
   },
   establecimientoList: {
     paddingBottom: 20,
   },
   establecimientoItem: {
-    marginBottom: 16,
-    alignItems: 'center',
+    flexDirection: 'row', // Alinea imagen y texto en fila
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: 'center', // Centra verticalmente
   },
   establecimientoImage: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     borderRadius: 8,
+    marginRight: 12, // Espacio entre la imagen y el texto
+  },
+  establecimientoInfo: {
+    flex: 1, // Toma el espacio restante para el texto
+  },
+  nombreEstablecimiento: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  horarioEstablecimiento: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
   },
   establecimientoDetail: {
     color: '#F37A20',

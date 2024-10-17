@@ -246,9 +246,11 @@ export default function HomeScreen() {
         onPress={handleNavigation}
         activeOpacity={0.7}
         style={{
+          
           backgroundColor: "#E7E8EA",
           borderRadius: 30,
           marginTop: 20,
+          marginBottom:20,
           paddingVertical: 15,  // Aumenta el padding vertical
           paddingHorizontal: 20, // Espaciado horizontal dentro del botón
           width: '80%',         // Ocupa todo el ancho disponible
@@ -259,8 +261,9 @@ export default function HomeScreen() {
         <Text
           style={{
             color: "#000",
-            fontSize: 16,
-            textAlign: 'center',
+            fontSize: 15,
+            textAlign: 'left',
+            
           }}
         >
           Busca tus productos favoritos
@@ -268,28 +271,34 @@ export default function HomeScreen() {
       </TouchableOpacity>
     </View>
 
-      <View className="flex flex-col border border-1">
-        <Text
-          className="ml-4 text-[2vh] font-moon"
-          style={{ fontWeight: "100" }}
-        >
-          Categorías
-        </Text>
-        <View className="flex flex-row border border-1 justify-around">
-         
-          <IconCat
-            img={require("@/assets/images/logo.png")}
-            name="Establecimientos"
-            disabled={loading}
-          />
-          <IconCat
-            img={require("@/assets/images/logo.png")}
-            name="Productos"
-            disabled={loading}
-          />
-          
-        </View>
-      </View>
+    <View className="flex flex-col border border-1">
+  <Text
+    className="ml-4 text-[2vh] font-moon"
+    style={{ fontWeight: "100" }}
+  >
+    Categorías
+  </Text>
+  <View className="flex flex-row border border-1 justify-around">
+  <View className="flex flex-col border border-1 justify-center items-center mt-3 mb-3 w-[150px] h-[120px]">
+    <IconCat
+      img={require("@/assets/images/agenciaa.png")}
+      name="Establecimientos"
+      disabled={loading}
+    />
+  </View>
+  <View className="flex flex-col border border-1 justify-center items-center mt-3 mb-3 w-[150px] h-[120px]">
+    <IconCat
+      img={require("@/assets/images/hamburguesa.png")}
+      name="Productos"
+      disabled={loading}
+    />
+  </View>
+</View>
+
+
+</View>
+
+
 
 
 
@@ -399,32 +408,33 @@ export function IconCat({
   disabled: boolean;
 }) {
   return (
-    <View className="border border-1 ">
-      <Link
-        href={`/contenido/${name}` as any}
-        disabled={disabled}
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-        className="border border-1 rounded-lg"
-      >
-        <View className="border border-1 w-full flex justify-center items-center">
-          <Image
-            className="border border-2 w-[10vh] h-[10vh] p-4"
-            source={img}
-          />
-          <Text className="mt-2 text-center">{name}</Text>
-        </View>
-      </Link>
+    <View className="">
+  <Link
+    href={`/contenido/${name}` as any}
+    disabled={disabled}
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+    className="rounded-lg"
+  >
+    <View className="w-full flex justify-center items-center">
+      <Image
+        className="w-[10vh] h-[10vh] p-4"
+        source={img}
+      />
+      <Text className="mt-2 text-center">{name}</Text>
     </View>
+  </Link>
+</View>
   );
 }
 
 export function IconPromo({ anuncio }: { anuncio: Producto }) {
   const productoAnuncio = productosSample[0];
   return (
+    <ScrollView contentContainerStyle={styles.formContainer}>
     <View className="p-4 z-10 h-[50vh] rounded-lg flex justify-center items-center">
       <ImageBackground
         className="w-[40vh] h-[40vh] border border-1 rounded-lg flex flex-col justify-between"
@@ -444,5 +454,11 @@ export function IconPromo({ anuncio }: { anuncio: Producto }) {
         </View>
       </ImageBackground>
     </View>
+    </ScrollView>
   );
 }
+const styles = StyleSheet.create({
+  formContainer: {
+    paddingHorizontal: 20,
+  },
+});
