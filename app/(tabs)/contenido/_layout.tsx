@@ -18,10 +18,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="Productos"/>
-        <Stack.Screen name="Establecimientos"/>
+        <Stack.Screen name="Productos" options={{ headerShown: false }}/>
+        <Stack.Screen name="Establecimientos" options={{ headerShown: false }}/>
+        {/*<Stack.Screen name="Search" options={{ headerShown: false }}/>*/}
         <Stack.Screen name="establecimiento" options={{ headerShown: false }} />
         <Stack.Screen name="producto" options={{ headerShown: false }} />
+        
       </Stack>
       <Toast />
 

@@ -46,6 +46,7 @@ export type EstablecimientoXProducto={
 export type DetalleCarrito={
     producto:Producto;
     cantidad: number;
+    comentario: string;
 }
 export type CategoriaEstablecimiento ={
     id_categoria_establecimiento: number;
@@ -61,6 +62,30 @@ export type CategoriaProducto ={
     img: string;
     estado: number;
 }
+export type MetodoPago={
+    id_pago: number;
+    metodo_pago:string;
+    porcentaje: number;
+}
+
+export declare type MetodosPago={
+    metodosPago: MetodoPago[]|null;
+    setMetodosPago: ({
+        metodosPago,
+    }:{
+        metodosPago: MetodoPago[];
+    })=> void;
+}
+
+export declare type Promocion ={
+    listaPromociones: Producto[]|null;
+    setPromocion: ({
+        listaPromociones,
+    }:{
+        listaPromociones: Producto[];
+    })=> void;
+}
+
 export declare type Lugar ={
     id_lugar: number|null;
     nombre: string|null;
@@ -147,6 +172,7 @@ export declare interface EstablecimientosXProductos{
 }
 
 export declare interface Carrito {
+    id_establecimiento: number | null;
     listaProductos: DetalleCarrito[] | null;
 
     setCarrito: ({
@@ -154,5 +180,9 @@ export declare interface Carrito {
     }: {
         listaProductos: DetalleCarrito[];
     }) => void;
-
+    setEstablecimiento:({
+        id_establecimiento,
+    }: {
+        id_establecimiento: number;
+    }) => void;
 }

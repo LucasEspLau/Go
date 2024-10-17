@@ -1,16 +1,22 @@
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, Image, ImageBackground, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, ImageBackground, FlatList, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, SimpleLineIcons } from '@expo/vector-icons';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { useCarrito, useEstablecimientosXProductos } from '@/store';
+import { useCarrito, useEstablecimientosXProductos, useLocationStore } from '@/store';
 import { useEffect, useState } from 'react';
 import { DetalleCarrito, EstablecimientoXProducto, Producto } from '@/util/definitions';
 import Toast from 'react-native-toast-message';
 
 export default function Establecimiento() {
   const { listaEstablecimientosXProducto } = useEstablecimientosXProductos();
-  const { listaProductos, setCarrito } = useCarrito();
+  const { listaProductos, setCarrito, setEstablecimiento } = useCarrito();
+  const {setDestinationLocation} = useLocationStore();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedProducto, setSelectedProducto] = useState<Producto | null>(null);
+  const [cantidad, setCantidad] = useState<number>(1);
+  const [comentario, setComentario] = useState<string>('');
+
 
   const params = useLocalSearchParams();
 
@@ -27,7 +33,7 @@ export default function Establecimiento() {
       setEstablecimientoData(estable);
     }
   }, [estable]);
-
+/*
   const [productoAReemplazar, setProductoAReemplazar] = useState<Producto | null>(null);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
 
@@ -64,60 +70,108 @@ export default function Establecimiento() {
       );
     }
   }, [mostrarConfirmacion]);
-
+*/
   if (!establecimientoData) {
     return <Text>No se encontró el establecimiento.</Text>;
   }
 
-  const handleAddCarrito = (item: Producto) => {
-    const productosEnCarrito = listaProductos ?? [];
+  const handleAddCarrito = () => {
+    if (selectedProducto) {
+      const productosEnCarrito = listaProductos ?? [];
 
-    if (productosEnCarrito.length > 0) {
-      const idEstablecimientoEnCarrito = productosEnCarrito[0].producto.id_establecimiento;
+      // Verificamos si ya hay productos en el carrito de otro establecimiento
+      // Verificamos si ya hay productos en el carrito de otro establecimiento
+      if (productosEnCarrito.length > 0 && productosEnCarrito[0].producto.id_establecimiento !== selectedProducto.id_establecimiento) {
+        // Preguntar al usuario si desea reemplazar el carrito
+        Alert.alert(
+          "Reemplazar Carrito",
+          "El producto seleccionado pertenece a un establecimiento diferente. ¿Deseas reemplazar el carrito actual?",
+          [
+            {
+              text: "Cancelar",
+              onPress: () => {},
+              style: "cancel"
+            },
+            {
+              text: "Reemplazar",
+              onPress: () => {
+                const nuevoDetalle: DetalleCarrito = {
+                  producto: selectedProducto,
+                  cantidad: cantidad,
+                  comentario: comentario,
+                };
+                
+                const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+                console.log(estElegido);
+                setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
 
-      if (idEstablecimientoEnCarrito !== item.id_establecimiento) {
-        Toast.show({
-          type: 'error',
-          text1: 'Carrito',
-          text2: 'El producto no corresponde al establecimiento actual. ¿Deseas reemplazar el carrito?',
-          position: 'bottom',
-        });
+                setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
+                // Reemplazar el carrito
+                setCarrito({
+                  listaProductos: [nuevoDetalle],
+                });
 
-        setProductoAReemplazar(item);
-        setMostrarConfirmacion(true);
+                Toast.show({
+                  type: 'success',
+                  text1: 'Carrito',
+                  text2: 'Carrito reemplazado y producto añadido',
+                  position: 'bottom',
+                });
+                setModalVisible(false);
+                setCantidad(1);
+                setComentario('');
+              }
+            }
+          ]
+        );
         return;
       }
-    }
 
-    const yaEnCarrito = productosEnCarrito.some(
-      (detalle) => detalle.producto.id_producto === item.id_producto
-    );
+      // Si ya está en el carrito, mostramos una alerta
+      const yaEnCarrito = productosEnCarrito.some(
+        (detalle) => detalle.producto.id_producto === selectedProducto.id_producto
+      );
 
-    if (yaEnCarrito) {
-      Toast.show({
-        type: 'info',
-        text1: 'Carrito',
-        text2: 'Ya está añadido al carrito',
-        position: 'bottom',
-      });
-    } else {
-      const nuevoDetalle: DetalleCarrito = {
-        producto: item,
-        cantidad: 1,
-      };
+      if (yaEnCarrito) {
+        Toast.show({
+          type: 'info',
+          text1: 'Carrito',
+          text2: 'El producto ya está en el carrito.',
+          position: 'bottom',
+        });
+      } else {
+        const nuevoDetalle: DetalleCarrito = {
+          producto: selectedProducto,
+          cantidad: cantidad,
+          comentario: comentario,
+        };
+        const estElegido=listaEstablecimientosXProducto[selectedProducto.id_establecimiento]
+        console.log(estElegido);
+        setEstablecimiento({id_establecimiento:selectedProducto.id_establecimiento})
 
-      setCarrito({
-        listaProductos: [...productosEnCarrito, nuevoDetalle],
-      });
+        setDestinationLocation({latitude:estElegido?.latitud,longitude:estElegido?.longitud,address:""})
+        setCarrito({
+          listaProductos: [...productosEnCarrito, nuevoDetalle],
+        });
 
-      Toast.show({
-        type: 'success',
-        text1: 'Carrito',
-        text2: 'Producto añadido al carrito',
-        position: 'bottom',
-      });
+        Toast.show({
+          type: 'success',
+          text1: 'Carrito',
+          text2: 'Producto añadido al carrito',
+          position: 'bottom',
+        });
+      }
+
+      setModalVisible(false);
+      setCantidad(1);
+      setComentario('');
     }
   };
+  const openModal = (producto: Producto) => {
+    setSelectedProducto(producto);
+    setModalVisible(true);
+  };
+
 
   const renderHeader = () => (
     <>
@@ -162,13 +216,51 @@ export default function Establecimiento() {
     <>
     <SafeAreaView className="flex-1 bg-white">
       <FlatList
-        data={establecimientoData.productos}
-        renderItem={({ item }) => <CardProducto producto={item} onAddCarrito={() => handleAddCarrito(item)} />}
+        data={establecimientoData?.productos}
+        renderItem={({ item }) => <CardProducto producto={item} onAddCarrito={() => openModal(item)} />}
         keyExtractor={(item) => item.id_producto.toString()}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 10 }}
         ListHeaderComponent={renderHeader} // Usar renderHeader aquí
       />
+      <Modal visible={modalVisible} animationType="slide" transparent={true}>
+        <View className="flex-1 justify-center items-center bg-opacity-50">
+          <View className="bg-white p-4 rounded-lg w-4/5">
+            <Text className="font-bold text-lg mb-4">Selecciona cantidad y añade comentario</Text>
+            
+            <Text className="font-semibold mb-2">Cantidad:</Text>
+            <TextInput
+              className="border border-gray-300 p-2 rounded-md mb-4"
+              keyboardType="numeric"
+              value={cantidad.toString()}
+              onChangeText={(value) => setCantidad(Number(value))}
+            />
+            
+            <Text className="font-semibold mb-2">Comentario:</Text>
+            <TextInput
+              className="border border-gray-300 p-2 rounded-md mb-4"
+              multiline
+              value={comentario}
+              onChangeText={setComentario}
+            />
+            
+            <View className="flex-row justify-end">
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="bg-gray-400 p-2 rounded-md mr-2"
+              >
+                <Text className="text-white">Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleAddCarrito}
+                className="bg-green-500 p-2 rounded-md"
+              >
+                <Text className="text-white">Añadir al Carrito</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
       <View className='h-[10vh] bg-white flex-row items-center justify-between p-4'>
         <Text className="text-black font-bold text-lg">Total Carrito:</Text>

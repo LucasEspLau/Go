@@ -1,4 +1,4 @@
-import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, LocationStore, Lugar, Producto } from "@/util/definitions";
+import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, LocationStore, Lugar, MetodoPago, MetodosPago, Producto, Promocion } from "@/util/definitions";
 import { create } from "zustand";
 
 export const useLocationStore = create<LocationStore>((set) => ({
@@ -94,7 +94,18 @@ export const useEstablecimientosXProductos = create<EstablecimientosXProductos>(
     }
 }))
 
-
+export const usePromocion=create<Promocion>((set)=>({
+    listaPromociones: null,
+    setPromocion:({
+        listaPromociones
+    }:{
+        listaPromociones: Producto[]
+    })=>{
+        set(()=>({
+            listaPromociones: listaPromociones,
+        }));
+    }
+}))
 
 export const useLugar=create<Lugar>((set)=>({
     id_lugar: null,
@@ -122,6 +133,7 @@ export const useLugar=create<Lugar>((set)=>({
 }))
 
 export const useCarrito=create<Carrito>((set)=>({
+    id_establecimiento: null,
     listaProductos:null,
     setCarrito:({
         listaProductos,
@@ -130,6 +142,28 @@ export const useCarrito=create<Carrito>((set)=>({
     })=>{
         set(()=>({
             listaProductos: listaProductos,
+        }));
+    },
+    setEstablecimiento:({
+        id_establecimiento,
+    }:{
+        id_establecimiento: number;
+    })=>{
+        set(()=>({
+            id_establecimiento: id_establecimiento,
+        }));
+    }
+}))
+
+export const useMetodosPago=create<MetodosPago>((set)=>({
+    metodosPago:null,
+    setMetodosPago:({
+        metodosPago,
+    }:{
+        metodosPago: MetodoPago[];
+    })=>{
+        set(()=>({
+            metodosPago: metodosPago,
         }));
     }
 }))
