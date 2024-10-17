@@ -1,16 +1,28 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Dimensions, Image, ScrollView } from 'react-native';
 import { useNavigation } from 'expo-router';
-import { MaterialIcons } from '@expo/vector-icons'; // Importa los íconos de Expo
+import { MaterialIcons } from '@expo/vector-icons'; 
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importa AsyncStorage
 
 const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
+  const [showPassword, setShowPassword] = useState(false); 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    // Verifica si ya hay un usuario autenticado al cargar la pantalla
+    const checkSession = async () => {
+      const storedUser = await AsyncStorage.getItem('user');
+      if (storedUser) {
+        navigation.navigate('selectArea' as never); // Si ya hay usuario, navegar a la siguiente pantalla
+      }
+    };
+
+    checkSession();
+  }, []);
 
   const handleLogin = async () => {
     if (email && password) {
@@ -27,11 +39,12 @@ export default function LoginScreen() {
         });
 
         const result = await response.json();
-
-        console.log('API Response:', result); // Imprime la respuesta de la API en la consola
+        console.log('API Response:', result);
 
         if (response.ok) {
           if (result.status === 'success') {
+            // Guarda el usuario en AsyncStorage
+            await AsyncStorage.setItem('user', JSON.stringify({ email })); // Guarda el email o el identificador del usuario
             Alert.alert('Inicio de sesión exitoso', '¡Bienvenido de nuevo!');
             navigation.navigate('selectArea' as never);
           } else if (result.status === 'not_registered') {
@@ -43,7 +56,7 @@ export default function LoginScreen() {
           Alert.alert('Error', 'Respuesta no esperada del servidor.');
         }
       } catch (error) {
-        console.error('Error al conectar con el servidor:', error); // Imprime el error en la consola
+        console.error('Error al conectar con el servidor:', error);
         Alert.alert('Error', 'No se pudo conectar con el servidor.');
       }
     } else {
@@ -188,9 +201,9 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     position: 'absolute',
-    right: 10, // Position the icon to the right inside the input
-    top: '50%', // Center the icon vertically
-    transform: [{ translateY: -12 }], // Adjust vertical position for better alignment
+    right: 10,
+    top: '50%',
+    transform: [{ translateY: -12 }],
   },
   button: {
     width: '100%',
