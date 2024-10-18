@@ -18,7 +18,7 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="mapSelect" options={{ headerShown: false }} />
-        <Stack.Screen name="mapa" options={{ headerShown: false }} />
+        <Stack.Screen name="mapaTest" options={{ headerShown: false }} />
 
       </Stack>
     </ThemeProvider>
