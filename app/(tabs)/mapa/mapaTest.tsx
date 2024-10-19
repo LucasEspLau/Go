@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT } from "react-native-maps";
 import MapViewDirections from "react-native-maps-directions";
 
-export default function Mapa() {
+export default function MapaTest() {
     const {
         userLongitude,
         userLatitude,

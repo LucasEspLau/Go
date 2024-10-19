@@ -92,7 +92,6 @@ export default function MapSelect() {
   
   return (
     <View className="flex-1">
-      {/* Botón circular sobre el mapa */}
       <TouchableOpacity
         onPress={() => router.back()}
         style={{
@@ -104,12 +103,12 @@ export default function MapSelect() {
           padding: 10, // Ajusta el tamaño del botón
           zIndex: 1, // Asegura que el botón esté encima del mapa
           elevation: 5, // Sombra para dar efecto elevado
+          pointerEvents: "box-none",  // Esto permitirá que los eventos pasen al mapa
         }}
       >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
 
-      {/* Mapa */}
       <MapView
         provider={PROVIDER_DEFAULT}
         className="w-full h-full"
@@ -117,33 +116,50 @@ export default function MapSelect() {
         showsPointsOfInterest={false}
         showsUserLocation={true}
         userInterfaceStyle="light"
-        region={region} // Establecer la región del mapa
+        region={region}  // Cambiar a region para actualizar dinámicamente
+        scrollEnabled={true}
+        zoomEnabled={true}
+        rotateEnabled={true}
+        pitchEnabled={true}
         onRegionChangeComplete={(newRegion) => {
-          setRegion(newRegion); // Actualiza la región cuando se mueve el mapa
+          console.log("Map region changed", newRegion);
+          setRegion(newRegion);
         }}
       >
-        {markerCoordinate.latitude !== 0 && markerCoordinate.longitude !== 0 && (
-          <Marker
-            coordinate={markerCoordinate}
-            draggable // Hacer que el marcador sea arrastrable
-            onDragEnd={async (e) => {
-              const { latitude, longitude  } = e.nativeEvent.coordinate;
-              setMarkerCoordinate({ latitude, longitude });
-              const addressUser = await Location.reverseGeocodeAsync({
-                latitude: latitude,
-                longitude: longitude,
-              });
-              setUserLocation({ latitude, longitude, address: `${addressUser[0].name}, ${addressUser[0].region}` });
-              // Actualiza la región al arrastrar el marcador
-              setRegion((prevRegion) => ({
-                latitude,
-                longitude,
-                latitudeDelta: prevRegion.latitudeDelta,
-                longitudeDelta: prevRegion.longitudeDelta,
-              }));
-            }}
-          />
-        )}
+    {markerCoordinate.latitude !== 0 && markerCoordinate.longitude !== 0 && (
+      <Marker
+        coordinate={markerCoordinate}
+        draggable
+        onDragEnd={(e) => {
+          const { latitude, longitude } = e.nativeEvent.coordinate;
+          console.log("Se movió", latitude, longitude);
+          setMarkerCoordinate({ latitude, longitude });
+
+          // Actualizar la ubicación del usuario sin esperar a que se complete
+          Location.reverseGeocodeAsync({
+            latitude,
+            longitude,
+          }).then((addressUser) => {
+            setUserLocation({
+              latitude,
+              longitude,
+              address: `${addressUser[0]?.name || 'Dirección no encontrada'}, ${addressUser[0]?.region || ''}`,
+            });
+
+            setRegion((prevRegion) => ({
+              latitude,
+              longitude,
+              latitudeDelta: prevRegion.latitudeDelta,
+              longitudeDelta: prevRegion.longitudeDelta,
+            }));
+          }).catch((error) => {
+            console.error("Error al obtener la dirección:", error);
+          });
+        }}
+        zIndex={10}  // Prioridad de eventos
+      />
+    )}
+
         {destinationLatitude != null && destinationLongitude != null && (
           <Marker
             coordinate={{
