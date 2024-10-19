@@ -1,219 +1,222 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useCategoriasEstablecimiento, useLugar } from '@/store';
-import { Establecimiento } from '@/util/definitions';
-import { router } from 'expo-router';
+import { CategoriaEstablecimiento, Producto } from '@/util/definitions';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Image, SafeAreaView, Text, View, FlatList, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 
-export default function Search() {
-  const { id_lugar } = useLugar();
+export default function ScreenProductos() {
+  const router = useRouter();
   const { listaCategoriasEstablecimiento } = useCategoriasEstablecimiento();
+  const { id_lugar } = useLugar();
+  const [categorias, setCategorias] = useState<CategoriaEstablecimiento[]>(listaCategoriasEstablecimiento || []);
+  const [categoria, setCategoria] = useState<CategoriaEstablecimiento | null>(null);
+  const [productos, setProductos] = useState<Producto[]>([]);
+  const [mejoresProductos, setMejoresProductos] = useState<Producto[]>([]); // Estado para los productos más solicitados
+  const [buscar, setBuscar] = useState(''); // Nuevo estado para la búsqueda del producto
+  const [loading, setLoading] = useState(false); // Estado para indicar si está cargando
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Mostrar mensaje de carga si aún no tenemos categorías
+  if (!listaCategoriasEstablecimiento) {
+    return (<Text>Cargando...</Text>);
+  }
 
   useEffect(() => {
-    const fetchAllEstablecimientos = async () => {
-      setLoading(true);
+    const fetchProductos = async () => {
       try {
-        const body = {
-          token: "2342423423423",
-          id_lugar,
-        };
+        setLoading(true); // Indicamos que está cargando
 
-        const response = await fetch('https://api.deliverygoperu.com/establecimiento_productos.php', {
+        // Fetch de productos más solicitados
+        const responseRanking = await fetch('https://api.deliverygoperu.com/productos_ranking.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify({
+            token: '2342423423423',
+            id_lugar: id_lugar,
+          }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          setEstablecimientos(data);
-        } else {
-          setError('Error al cargar los establecimientos.');
+        if (!responseRanking.ok) {
+          throw new Error('Error de red al obtener productos más solicitados');
+        }
+
+        const dataRanking = await responseRanking.json();
+
+        if (dataRanking.status !== 'error' && Array.isArray(dataRanking) && dataRanking.length > 0) {
+          setMejoresProductos(dataRanking); // Actualiza con los productos más solicitados
+        }
+
+        // Fetch de productos con búsqueda
+        const responseBuscar = await fetch('https://api.deliverygoperu.com/productos_buscar_lugar.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: '2342423423423',
+            id_lugar: id_lugar,
+            buscar: buscar,
+          }),
+        });
+
+        if (!responseBuscar.ok) {
+          throw new Error('Error de red al buscar productos');
+        }
+
+        const dataBuscar = await responseBuscar.json();
+
+        if (Array.isArray(dataBuscar) && dataBuscar.length > 0) {
+          const productosExtraidos = dataBuscar.flatMap((establecimiento: any) => {
+            return establecimiento && Array.isArray(establecimiento.productos) ? establecimiento.productos : [];
+          });
+
+          const productosFiltrados = productosExtraidos.filter((producto: any) => producto?.nombre_producto && producto?.precio_producto);
+          setProductos(productosFiltrados); // Actualiza con los productos filtrados
         }
       } catch (error) {
-        setError('Error de conexión. Verifique su internet.');
+        console.error('Error al obtener los productos:', error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Finaliza el estado de carga
       }
     };
 
-    fetchAllEstablecimientos();
-  }, [id_lugar]);
+    fetchProductos();
+  }, [id_lugar, categoria, buscar]);
 
-  const fetchEstablecimientos = async () => {
-    if (searchQuery.trim() === '') return;
+  // Función para manejar la selección de categorías
+  const handlePressCategoria = (item: CategoriaEstablecimiento) => {
+    setCategoria(item);
+  };
 
-    setLoading(true);
-    setError(null);
+  // Función para manejar la selección de productos
+  const handlePressProducto = (item: Producto) => {
+    router.push(`/(tabs)/contenido/producto/${item.id_producto}`);
+  };
 
-    try {
-      const body = {
-        token: "2342423423423",
-        buscar: searchQuery,
-        id_lugar,
-      };
-
-      const response = await fetch('https://api.deliverygoperu.com/productos_buscar_lugar.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setEstablecimientos(data.length > 0 ? data : []);
-      } else {
-        setError('No se pudo obtener establecimientos.');
-      }
-    } catch (error) {
-      setError('Error de conexión. Verifique su internet.');
-    } finally {
-      setLoading(false);
+  // Función para obtener una clave única para cada item
+  const getUniqueKey = (item: Producto | CategoriaEstablecimiento) => {
+    if ((item as Producto).id_producto) {
+      return (item as Producto).id_producto.toString(); // Usar id_producto si es un Producto
+    } else if ((item as CategoriaEstablecimiento).id_categoria_establecimiento) {
+      return (item as CategoriaEstablecimiento).id_categoria_establecimiento.toString(); // Usar id_categoria_establecimiento si es una CategoriaEstablecimiento
+    } else {
+      return `${Math.random()}`; // Si ninguno de los ids está disponible, generar un valor único aleatorio
     }
   };
 
-  const renderEstablecimiento = ({ item }: { item: Establecimiento }) => (
-    <View style={styles.establecimientoItem}>
-      <Image source={{ uri: item.logo_establecimiento }} style={styles.establecimientoImage} />
-      <View style={styles.establecimientoInfo}>
-        <Text style={styles.nombreEstablecimiento}>{item.nombre_establecimiento}</Text>
-        <Text style={styles.horarioEstablecimiento}>
-          {`Horario: ${item.horario_inicio || 'No disponible'} - ${item.horario_fin || 'No disponible'}`}
-        </Text>
-        <TouchableOpacity onPress={() => router.push(`/(tabs)/contenido/establecimiento/${item.id_establecimiento}`)}>
-          <Text style={styles.establecimientoDetail}>Ver Detalles</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+  // Renderizar cada producto
+  const renderItem = ({ item }: { item: Producto }) => {
+    if (!item || !item.nombre_producto) {
+      return null; // Evita que se rendericen productos sin nombre
+    }
+
+    return <CardProducto item={item} onPress={() => handlePressProducto(item)} categorias={categorias} />;
+  };
+
+  // Renderizar cada categoría
+  const renderCategoryItem = ({ item }: { item: CategoriaEstablecimiento }) => (
+    <TouchableOpacity
+      key={getUniqueKey(item)} // Asignar una clave única
+      onPress={() => handlePressCategoria(item)}
+      className='border-2 border-gray rounded-xl p-2 ml-2 mr-2 items-center'
+    >
+      <Image
+        className="w-[80px] h-[80px] rounded-xl"
+        source={{ uri: item.img }}
+      />
+      <Text>{item.nombre}</Text>
+    </TouchableOpacity>
   );
 
+  // Filtra los productos para mostrar solo los que tienen nombre y precio válidos
+  const filteredProductos = productos.filter(item =>
+    item?.nombre_producto && item?.precio_producto
+  );
+
+  // Renderizado principal
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <SafeAreaView className="bg-white flex-1">
+      <TouchableOpacity
+        onPress={() => router.back()}
+        className="p-4 mt-4"
+      >
         <Ionicons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
 
-      {/* Barra de búsqueda con ícono de lupa */}
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="gray" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Buscar establecimientos..."
-          value={searchQuery}
-          onChangeText={(text) => {
-            setSearchQuery(text);
-            fetchEstablecimientos();
-          }}
-        />
-      </View>
+      {/* Campo de búsqueda */}
+      <TextInput
+        value={buscar}
+        onChangeText={setBuscar} // Actualiza el valor de 'buscar' a medida que el usuario escribe
+        placeholder="Buscar productos..."
+        className="border-2 border-gray-300 rounded-xl p-4 mx-4 my-2"
+      />
 
-      {/* Muestra título "TUS RESULTADOS" si hay resultados */}
-      {establecimientos.length > 0 && (
-        <Text style={styles.resultadosTitle}>TUS RESULTADOS</Text>
+      <ScrollView className='border-2 border-black min-h-[150px] max-h-[150px]'>
+        <FlatList
+          data={listaCategoriasEstablecimiento}
+          renderItem={renderCategoryItem}
+          keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 10 }}
+        />
+      </ScrollView>
+
+      {/* Sección de productos más solicitados */}
+      {loading ? (
+        <Text className="text-center mt-4">Cargando productos...</Text>
+      ) : (
+        mejoresProductos.length > 0 ? (
+          <FlatList
+            data={mejoresProductos}
+            renderItem={renderItem}
+            keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
+            numColumns={1}
+            contentContainerStyle={{ paddingHorizontal: 8 }}
+          />
+        ) : (
+          <Text className="text-center mt-4">No hay productos más solicitados disponibles.</Text>
+        )
       )}
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#F37A20" />
-      ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : (
+      {/* Sección de productos filtrados */}
+      {filteredProductos.length > 0 ? (
         <FlatList
-          data={establecimientos}
-          renderItem={renderEstablecimiento}
-          keyExtractor={(item) => item.id_establecimiento ? item.id_establecimiento.toString() : Math.random().toString()}
-          contentContainerStyle={styles.establecimientoList}
-          ListEmptyComponent={<Text style={styles.emptyListText}>No hay resultados para "{searchQuery}"</Text>}
+          data={filteredProductos}
+          renderItem={renderItem}
+          keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
+          numColumns={1}
+          contentContainerStyle={{ paddingHorizontal: 8 }}
         />
+      ) : (
+        <Text className="text-center mt-4">No hay productos disponibles.</Text>
       )}
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  backButton: {
-    padding: 4,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 8,
-    marginBottom: 16,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-  },
-  resultadosTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'left', // Alinea a la izquierda
-    marginLeft: 4, // Ajusta la distancia desde el borde izquierdo
-    color: '#333',
-  },
-  establecimientoList: {
-    paddingBottom: 20,
-  },
-  establecimientoItem: {
-    flexDirection: 'row', // Alinea imagen y texto en fila
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    marginBottom: 12,
-    alignItems: 'center', // Centra verticalmente
-  },
-  establecimientoImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12, // Espacio entre la imagen y el texto
-  },
-  establecimientoInfo: {
-    flex: 1, // Toma el espacio restante para el texto
-  },
-  nombreEstablecimiento: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  horarioEstablecimiento: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  establecimientoDetail: {
-    color: '#F37A20',
-    fontWeight: 'bold',
-  },
-  errorText: {
-    color: 'red',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  emptyListText: {
-    textAlign: 'center',
-    color: 'gray',
-    marginTop: 20,
-  },
-});
+// Componente que muestra la tarjeta del producto
+export function CardProducto({ item, onPress, categorias }: { item: Producto; onPress: () => void; categorias: CategoriaEstablecimiento[] }) {
+  const categoriaId = Number(item.categoria);
+  const cat = categorias.find(c => c.id_categoria_establecimiento === categoriaId);
+
+  return (
+    <TouchableOpacity onPress={onPress} className="flex-row p-2 border-b border-gray-300">
+      <Image
+        className="w-[15vh] h-full rounded-xl"
+        source={{ uri: item.img_producto }} 
+      />
+      <View className="flex-1 ml-4 mt-2 mb-2"> 
+        <Text className="text-gray-700 mb-1 font-semibold text-left">{item.nombre_producto}</Text>
+        {cat ? (
+          <Text className="text-gray-600 mb-1 text-left">{cat.nombre}</Text>
+        ) : (
+          <Text className="text-gray-600 mb-1 text-left">Categoría no disponible</Text>
+        )}
+        <Text className="text-gray-500 mb-1 text-left">{`Precio: S/ ${item.precio_producto}`}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
