@@ -153,16 +153,7 @@ export default function ScreenProductos() {
         className="border-2 border-gray-300 rounded-xl p-4 mx-4 my-2"
       />
 
-      <ScrollView className='border-2 border-black min-h-[150px] max-h-[150px]'>
-        <FlatList
-          data={listaCategoriasEstablecimiento}
-          renderItem={renderCategoryItem}
-          keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 10 }}
-        />
-      </ScrollView>
+      
 
       {/* Sección de productos más solicitados */}
       {loading ? (
