@@ -92,7 +92,8 @@ export default function ScreenProductos() {
 
   // Función para manejar la selección de productos
   const handlePressProducto = (item: Producto) => {
-    router.push(`/(tabs)/contenido/producto/${item.id_producto}`);
+    console.log(item)
+    router.push(`/(tabs)/contenido/producto/${item.id_producto+"-"+item.id_establecimiento}`);
   };
 
   // Función para obtener una clave única para cada item
