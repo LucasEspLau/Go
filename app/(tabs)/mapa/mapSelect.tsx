@@ -1,6 +1,6 @@
 import { useLocationStore } from "@/store";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MapView, { Marker, PROVIDER_DEFAULT, Region } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,9 +8,11 @@ import { Link, router } from "expo-router";
 export default function MapSelect() {
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Estado de carga
+  const [isLoadDirec,setIsLoadDirec]=useState(false);
   const {
     userLongitude,
     userLatitude,
+    userAddress,
     destinationLongitude,
     destinationLatitude,
     setUserLocation
@@ -43,24 +45,43 @@ export default function MapSelect() {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       });
-      setUserLocation({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        address: `${address[0].name}, ${address[0].region}`,
-      });
+      console.log("USEEFECT MAPA")
 
-      // Establecer la ubicación del marcador y actualizar la región del mapa
-      setMarkerCoordinate({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
+      if(userLatitude && userLongitude){
+        console.log("CUANDO YA SE ENTRO AL MAPA")
+        setMarkerCoordinate({
+          latitude: userLatitude,
+          longitude: userLongitude,
+        });
+        setRegion({
+          latitude: userLatitude,
+          longitude: userLongitude,
+          latitudeDelta: 0.0922, // Ajusta el zoom del mapa
+          longitudeDelta: 0.0421, // Ajusta el zoom del mapa
+        });
+      }else{
+        console.log("PRIMERA VEZ ENTRANDO AL MAPA")
 
-      setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.0922, // Ajusta el zoom del mapa
-        longitudeDelta: 0.0421, // Ajusta el zoom del mapa
-      });
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          address: `${address[0].name}, ${address[0].region}`,
+        });
+  
+        // Establecer la ubicación del marcador y actualizar la región del mapa
+        setMarkerCoordinate({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+  
+        setRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.0922, // Ajusta el zoom del mapa
+          longitudeDelta: 0.0421, // Ajusta el zoom del mapa
+        });
+      }
+
 
       setIsLoading(false); // Termina la carga cuando se obtiene la ubicación
     };
@@ -123,7 +144,7 @@ export default function MapSelect() {
         pitchEnabled={true}
         onRegionChangeComplete={(newRegion) => {
           console.log("Map region changed", newRegion);
-          setRegion(newRegion);
+          //setRegion(newRegion);
         }}
       >
     {markerCoordinate.latitude !== 0 && markerCoordinate.longitude !== 0 && (
@@ -135,6 +156,7 @@ export default function MapSelect() {
           console.log("Se movió", latitude, longitude);
           setMarkerCoordinate({ latitude, longitude });
 
+          setIsLoadDirec(true)
           // Actualizar la ubicación del usuario sin esperar a que se complete
           Location.reverseGeocodeAsync({
             latitude,
@@ -145,15 +167,19 @@ export default function MapSelect() {
               longitude,
               address: `${addressUser[0]?.name || 'Dirección no encontrada'}, ${addressUser[0]?.region || ''}`,
             });
+            setIsLoadDirec(false)
 
+            /*
             setRegion((prevRegion) => ({
               latitude,
               longitude,
               latitudeDelta: prevRegion.latitudeDelta,
               longitudeDelta: prevRegion.longitudeDelta,
-            }));
+            }));*/
           }).catch((error) => {
             console.error("Error al obtener la dirección:", error);
+            setIsLoadDirec(false)
+
           });
         }}
         zIndex={10}  // Prioridad de eventos
@@ -172,6 +198,25 @@ export default function MapSelect() {
           />
         )}
       </MapView>
+      <View className="absolute bottom-0 left-0 w-full min-h-[8vh] flex justify-center items-center bg-white rounded-t-3xl p-4 z-10 shadow-2xl">
+        {
+          isLoadDirec ?
+          <ActivityIndicator size="small" color="#0000ff" />
+          :
+          (
+            <View className="flex flex-row justify-center items-center">
+              <Text className="mr-2">Ubicación:</Text>
+              <TextInput
+                className="text-center border border-1 p-1 min-w-[30vh] rounded-xl"
+                value={userAddress+""}
+                onChangeText={(direccion) => setUserLocation({latitude:userLatitude,longitude:userLongitude,address:direccion})}
+                placeholder="Añadir dirección"
+                />
+            </View>
+          )
+        }
+      </View>
+
     </View>
   );
 }

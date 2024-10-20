@@ -100,17 +100,21 @@ export default function Carrito() {
       id_cliente:1,
       id_establecimiento:id_establecimiento,
       monto:calcularTotal().toFixed(2),
+      monto_delivery:3,
+      monto_real:listaProductos?.reduce((total, detalle) => total + calcularSubtotal(detalle), 0) ?? 0,
       direccion:userAddress,
       latitud:userLatitude,
       longitud:userLongitude,
       metodo_pago:value,
       productos: [listaProductos?.map((item) => ({
         id_producto:item.producto.id_producto,
+        cantidad:item.cantidad,
         comentario:item.comentario
       }))]
     }
     console.log('Procesando pago con los siguientes datos:', dataPagar);
     console.log('Procesando pago con los siguientes datos:', dataPagar.productos[0]);
+    /*
     try {
       const response = await fetch(
         "https://api.deliverygoperu.com/recibir_pedido.php",
@@ -126,7 +130,7 @@ export default function Carrito() {
       console.log("Data pago:", data);
     } catch (error) {
       console.error("Error fetching data:", error);
-    }
+    }*/
   }
 
   const confirmarPago = () => {
@@ -164,12 +168,14 @@ export default function Carrito() {
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <Text className='font-moon mt-4 mb-2 text-xl '>Carrito</Text>
+
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/mapa/mapSelect' as any)}
           className="p-4"
         >
           <Ionicons name="location" size={24} color="black" />
         </TouchableOpacity>
+    
       </View>
 
       <View className="flex-1 border border-1">
@@ -242,21 +248,43 @@ export default function Carrito() {
           </View>
           <TouchableOpacity
             style={{
-              backgroundColor: userLatitude && userLongitude && value ? '#F37A20' : '#ccc', // Cambia el color según la condición
+              backgroundColor: '#F37A20', // Cambia el color según la condición
+              padding: 10,
+              borderRadius: 8,
+              marginTop: 10,
+            }}
+            onPress={() => router.push('/(tabs)/mapa/mapSelect' as any)}
+            className='flex flex-row justify-center'
+          >
+            <Ionicons name="location" size={24} color="white" />
+
+            <Text style={{ fontSize: 16, color: 'white', marginRight: 10 }}>
+              {!userAddress 
+                ? "Seleccionar ubicación en el mapa"  // Mensaje cuando la ubicación no está seleccionada
+                : userAddress // Mensaje por defecto si todo está correcto
+              }
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: userLatitude && userLongitude && value && listaProductos && listaProductos.length !== 0 ? '#F37A20' : '#ccc', // Cambia el color según la condición
               padding: 10,
               borderRadius: 8,
               marginTop: 10,
             }}
             onPress={confirmarPago}
             className='flex flex-row justify-center'
-            disabled={!userLatitude || !userLongitude || !value} // Deshabilitar si no hay ubicación o método de pago
+            disabled={!userLatitude || !userLongitude || !value || !listaProductos || listaProductos.length === 0} // Deshabilitar si no hay ubicación o método de pago
           >
             <Text style={{ fontSize: 16, color: 'white', marginRight: 10 }}>
               {!userLatitude || !userLongitude 
                 ? "Ubicación no seleccionada"  // Mensaje cuando la ubicación no está seleccionada
                 : !value 
                 ? "Selecciona un método de pago"  // Mensaje cuando el método de pago no está seleccionado
+                : !listaProductos || listaProductos.length === 0
+                ? "Carrito esta vacio"
                 : "Pagar"  // Mensaje por defecto si todo está correcto
+
               }
             </Text>
           </TouchableOpacity>
