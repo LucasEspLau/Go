@@ -115,26 +115,6 @@ export default function ScreenProductos() {
     return <CardProducto item={item} onPress={() => handlePressProducto(item)} categorias={categorias} />;
   };
 
-  // Renderizar cada categoría
-  const renderCategoryItem = ({ item }: { item: CategoriaEstablecimiento }) => (
-    <TouchableOpacity
-      key={getUniqueKey(item)} // Asignar una clave única
-      onPress={() => handlePressCategoria(item)}
-      className='border-2 border-gray rounded-xl p-2 ml-2 mr-2 items-center'
-    >
-      <Image
-        className="w-[80px] h-[80px] rounded-xl"
-        source={{ uri: item.img }}
-      />
-      <Text>{item.nombre}</Text>
-    </TouchableOpacity>
-  );
-
-  // Filtra los productos para mostrar solo los que tienen nombre y precio válidos
-  const filteredProductos = productos.filter(item =>
-    item?.nombre_producto && item?.precio_producto
-  );
-
   // Renderizado principal
   return (
     <SafeAreaView className="bg-white flex-1">
@@ -153,36 +133,29 @@ export default function ScreenProductos() {
         className="border-2 border-gray-300 rounded-xl p-4 mx-4 my-2"
       />
 
-      
-
-      {/* Sección de productos más solicitados */}
       {loading ? (
         <Text className="text-center mt-4">Cargando productos...</Text>
       ) : (
-        mejoresProductos.length > 0 ? (
+        <>
+          {/* Mejores productos mostrados de manera horizontal */}
           <FlatList
             data={mejoresProductos}
             renderItem={renderItem}
             keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
-            numColumns={1}
+            horizontal={true} // Mostrar los productos de manera horizontal
             contentContainerStyle={{ paddingHorizontal: 8 }}
+            key={'mejores-productos'} // Cambia la clave para evitar conflictos
           />
-        ) : (
-          <Text className="text-center mt-4">No hay productos más solicitados disponibles.</Text>
-        )
-      )}
 
-      {/* Sección de productos filtrados */}
-      {filteredProductos.length > 0 ? (
-        <FlatList
-          data={filteredProductos}
-          renderItem={renderItem}
-          keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
-          numColumns={1}
-          contentContainerStyle={{ paddingHorizontal: 8 }}
-        />
-      ) : (
-        <Text className="text-center mt-4">No hay productos disponibles.</Text>
+          {/* Sección de productos filtrados */}
+          <FlatList
+            data={productos}
+            renderItem={renderItem}
+            keyExtractor={getUniqueKey} // Usar getUniqueKey para obtener claves únicas
+            contentContainerStyle={{ paddingHorizontal: 8 }}
+            key={'productos-filtrados'} // Cambia la clave para evitar conflictos
+          />
+        </>
       )}
     </SafeAreaView>
   );
@@ -196,7 +169,7 @@ export function CardProducto({ item, onPress, categorias }: { item: Producto; on
   return (
     <TouchableOpacity onPress={onPress} className="flex-row p-2 border-b border-gray-300">
       <Image
-        className="w-[15vh] h-full rounded-xl"
+        className="w-[150px] h-[150px] rounded-xl" // Ajuste de tamaño
         source={{ uri: item.img_producto }} 
       />
       <View className="flex-1 ml-4 mt-2 mb-2"> 
