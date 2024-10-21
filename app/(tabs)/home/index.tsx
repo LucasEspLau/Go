@@ -22,6 +22,7 @@ import {
   useCategoriasEstablecimiento,
   useCategoriasProducto,
   useEstablecimientosXProductos,
+  useKilometraje,
   useLocationStore,
   useLugar,
   useMetodosPago,
@@ -32,6 +33,8 @@ import {
   CategoriaProducto,
   EstablecimientoXProducto,
   MetodoPago,
+  PrecioDelivery,
+  PrecioKm,
   Producto,
 } from "@/util/definitions";
 
@@ -48,6 +51,7 @@ export default function HomeScreen() {
   const { listaPromociones,setPromocion } = usePromocion();
   const { setMetodosPago } = useMetodosPago();
   const { id_lugar } = useLugar();
+  const {setPrecioDelivery,setPrecioKm}=useKilometraje();
   const [hasPermission, setHasPermission] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const handleNavigation = () => {
@@ -198,6 +202,47 @@ export default function HomeScreen() {
         const result = await response.json();
         const listaPromociones =result as Producto[];
         setPromocion({listaPromociones});
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } 
+      
+      try {
+        const response = await fetch(
+          "https://api.deliverygoperu.com/precio_delivery.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: "2342423423423",
+              id_lugar:id_lugar
+            }),
+          }
+        );
+        const result = await response.json();
+        const precioDelivery =result as PrecioDelivery;
+        setPrecioDelivery({precioDelivery});
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } 
+      try {
+        const response = await fetch(
+          "https://api.deliverygoperu.com/precio_km.php",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              token: "2342423423423",
+              id_lugar:id_lugar
+            }),
+          }
+        );
+        const result = await response.json();
+        const precioKm =result as PrecioKm;
+        setPrecioKm({precioKm});
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

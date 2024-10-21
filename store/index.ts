@@ -1,4 +1,4 @@
-import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, LocationStore, Lugar, MetodoPago, MetodosPago, Producto, Promocion } from "@/util/definitions";
+import { Carrito, CategoriaEstablecimiento, CategoriaProducto, CategoriasEstablecimiento, CategoriasProducto, DetalleCarrito, Establecimiento, EstablecimientosXArea, EstablecimientosXProductos, EstablecimientoXProducto, Kilometraje, LocationStore, Lugar, MetodoPago, MetodosPago, PrecioDelivery, PrecioKm, Producto, Promocion } from "@/util/definitions";
 import { create } from "zustand";
 
 export const useLocationStore = create<LocationStore>((set) => ({
@@ -164,6 +164,29 @@ export const useMetodosPago=create<MetodosPago>((set)=>({
     })=>{
         set(()=>({
             metodosPago: metodosPago,
+        }));
+    }
+}))
+
+export const useKilometraje=create<Kilometraje>((set)=>({
+    precioDelivery: null,
+    precioKm: null,
+    setPrecioDelivery: ({
+        precioDelivery,
+    }:{
+        precioDelivery: PrecioDelivery;
+    })=>{
+        set(()=>({
+            precioDelivery: precioDelivery,
+        }));
+    },
+    setPrecioKm: ({
+        precioKm,
+    }:{
+        precioKm: PrecioKm;
+    })=>{
+        set(()=>({
+            precioKm: precioKm,
         }));
     }
 }))

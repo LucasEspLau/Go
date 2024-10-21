@@ -67,6 +67,36 @@ export type MetodoPago={
     metodo_pago:string;
     porcentaje: number;
 }
+export type PrecioDelivery ={
+    id: number,
+    lugar: number,
+    precio: number,
+    km:number,
+    maximo_km:number,
+    estado:number
+}
+
+export type PrecioKm={
+    id: number,
+    lugar: number,
+    precio_km:number,
+    estado: number
+}
+
+export type Kilometraje={
+    precioDelivery:PrecioDelivery | null;
+    precioKm:PrecioKm | null;
+    setPrecioDelivery:({
+        precioDelivery,
+    }:{
+        precioDelivery: PrecioDelivery;
+    })=> void;
+    setPrecioKm:({
+        precioKm,
+    }:{
+        precioKm: PrecioKm;
+    })=> void;
+}
 
 export declare type MetodosPago={
     metodosPago: MetodoPago[]|null;
