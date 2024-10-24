@@ -221,7 +221,8 @@ export default function HomeScreen() {
           }
         );
         const result = await response.json();
-        const precioDelivery =result as PrecioDelivery;
+        const precioDelivery =result[0] as PrecioDelivery;
+        console.log(precioDelivery)
         setPrecioDelivery({precioDelivery});
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -241,7 +242,8 @@ export default function HomeScreen() {
           }
         );
         const result = await response.json();
-        const precioKm =result as PrecioKm;
+        const precioKm =result[0] as PrecioKm;
+        console.log(precioKm)
         setPrecioKm({precioKm});
       } catch (error) {
         console.error("Error fetching data:", error);

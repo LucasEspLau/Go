@@ -82,7 +82,20 @@ export type PrecioKm={
     precio_km:number,
     estado: number
 }
-
+export type CarritoKilometraje={
+    costo_delivery:number | null;
+    distancia_verificada:boolean | null;
+    setCostoDelivery:({
+        costo_delivery
+    }:{
+        costo_delivery:number;
+    })=>void;
+    setDistanciaVerificada:({
+        distancia_verificada
+    }:{
+        distancia_verificada: boolean;
+    })=>void;
+}
 export type Kilometraje={
     precioDelivery:PrecioDelivery | null;
     precioKm:PrecioKm | null;
